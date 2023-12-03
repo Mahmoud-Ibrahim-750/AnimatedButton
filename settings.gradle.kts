@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "AnimatedButton"
 include(":app")
- 
+include(":animatedbutton")
