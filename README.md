@@ -1,12 +1,16 @@
 # AnimatedButton Library
 
+[![](https://jitpack.io/v/Mahmoud-Ibrahim-750/AnimatedButton.svg)](https://jitpack.io/#Mahmoud-Ibrahim-750/AnimatedButton)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+
 AnimatedButton is an Android library that allows you to create animated loading buttons with ease. When the button is pressed, it smoothly shrinks to a smaller size, displaying a progress bar indicating the loading action. Once the loading is complete, the button dynamically shows either a success or failure icon based on your implementation.
 
 ## Demo
 
 Here's a visual representation of AnimatedButton in action:
 
-![AnimatedButton Demo](path/to/your/app/module/sample.gif)
+![AnimatedButton Demo](animated_button_sample.gif)
 
 In this example, the AnimatedButton demonstrates its loading animation, success state, and failure state.
 
@@ -33,12 +37,12 @@ Step 2. Add the dependency:
 
 ```gradle
 dependencies {
-    implementation 'com.github.YourUsername:AnimatedButton:1.0.0'
+    implementation 'com.github.Mahmoud-Ibrahim-750:AnimatedButton:v1.0.0'
 }
 ```
 
 
-For the latest version, check the [JitPack page](https://jitpack.io/#YourUsername/AnimatedButton).
+For the latest version, check the [releases page](https://github.com/Mahmoud-Ibrahim-750/AnimatedButton/releases), or the [JitPack page](https://jitpack.io/#Mahmoud-Ibrahim-750/AnimatedButton/Tag).
 
 ## Usage Example
 
@@ -62,7 +66,7 @@ To use AnimatedButton in your project, follow these simple steps:
     app:textStyle="bold" />
 ```
 
-2. In your activity or fragment, find the button by its ID and set a click listener.
+2. In your activity or fragment, find the button by its ID (or use view binding if you prefer) and set a click listener.
 
 ```kotlin
 animatedButton = findViewById<AnimatedButton>(R.id.animatedButton)
@@ -100,9 +104,7 @@ For more details and customization options, refer to the [documentation](link_to
 
 ## Credits
 
-This library is inspired by and based on the [OriginalLibraryName](https://github.com/OriginalLibraryUsername/OriginalLibraryName), an awesome project that provided the foundation for AnimatedButton. While the original library is no longer actively maintained, we appreciate the contributions of the original authors and the open-source community.
-
-We express our gratitude to [OriginalLibraryUsername](https://github.com/OriginalLibraryUsername) for their pioneering work on [OriginalLibraryName](https://github.com/OriginalLibraryUsername/OriginalLibraryName).
+This library is inspired by and based on the [MyLoadingButton](https://github.com/yatindeokar/MyLoadingButton), the project that provided the foundation for AnimatedButton. While the original library is no longer actively maintained, we appreciate the contributions of the author.
 
 ## License
 
