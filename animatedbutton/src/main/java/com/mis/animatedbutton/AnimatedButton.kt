@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
@@ -34,6 +35,7 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     private val defaultTextStyle = Typeface.NORMAL
     private val defaultFullyExpandedButtonWidth = 1500
     private val defaultAnimationDuration = 500
+    private val defaultFadeAnimationDuration = defaultAnimationDuration / 2
     private val defaultText = "Button"
     private val defaultBackgroundResVal = -1
 
@@ -121,6 +123,11 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     private var animationDuration = defaultAnimationDuration
 
     /**
+     * Button fade animation duration.
+     */
+    private var fadeAnimationDuration = defaultFadeAnimationDuration
+
+    /**
      * Button state.
      */
     private var buttonState = ButtonState.NORMAL
@@ -146,7 +153,9 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     private lateinit var buttonTextView: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var doneLayout: LinearLayout
+    private lateinit var doneImageView: ImageView
     private lateinit var errorLayout: LinearLayout
+    private lateinit var errorImageView: ImageView
 
 
     /*
@@ -177,13 +186,16 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
         buttonLayout = view.findViewById(R.id.button_layout)
         buttonTextView = view.findViewById(R.id.button_label_tv)
         progressBar = view.findViewById(R.id.progress_bar)
-        doneLayout = view.findViewById(R.id.progress_done_layout)
-        errorLayout = view.findViewById(R.id.progress_error_layout)
+        doneLayout = view.findViewById(R.id.done_layout)
+        doneImageView = view.findViewById(R.id.done_image_view)
+        errorLayout = view.findViewById(R.id.error_layout)
+        errorImageView = view.findViewById(R.id.error_image_view)
 
         // set the default click listener add the default behaviour of the button
         // however the custom click listener can be set or not (null)
         buttonLayout.setOnClickListener(this)
-        buttonAnimator = ButtonAnimator(buttonExpandedWidth, animationDuration)
+        buttonAnimator =
+            ButtonAnimator(buttonExpandedWidth, animationDuration, fadeAnimationDuration)
     }
 
     /**
@@ -222,7 +234,10 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
                 getColor(R.styleable.AnimatedButton_backgroundColor, defaultButtonColor)
 
             buttonBackgroundRes =
-                getResourceId(R.styleable.AnimatedButton_backgroundResource, defaultBackgroundResVal)
+                getResourceId(
+                    R.styleable.AnimatedButton_backgroundResource,
+                    defaultBackgroundResVal
+                )
 
             // TODO: Until escaping the pipe symbol is done, this will remain commented
 //            // Get the background attribute value
@@ -278,16 +293,16 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
         }
 
         val doneTintList = ColorStateList.valueOf(doneIconTintColor)
-        doneLayout.backgroundTintList = doneTintList
+        doneImageView.imageTintList = doneTintList
 
         val errorTintList = ColorStateList.valueOf(errorIconTintColor)
-        errorLayout.backgroundTintList = errorTintList
+        errorImageView.imageTintList = errorTintList
 
         // TODO: use setters for other attributes if possible
         setProgressIndicatorColor(progressIndicatorColor)
 
-        if (errorDrawable != null) errorLayout.background = errorDrawable
-        if (doneDrawable != null) doneLayout.background = doneDrawable
+        errorDrawable?.let { errorImageView.setImageDrawable(it) }
+        doneDrawable?.let { doneImageView.setImageDrawable(it) }
     }
 
     /**
@@ -307,8 +322,8 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
      * @param animDuration The time to be set.
      * @return
      */
-    fun setAnimationDuration(animDuration: Int): AnimatedButton {
-        buttonAnimator = ButtonAnimator(buttonExpandedWidth, animDuration)
+    fun setAnimationDuration(animDuration: Int, fadeAnimDuration: Int): AnimatedButton {
+        buttonAnimator = ButtonAnimator(buttonExpandedWidth, animDuration, fadeAnimDuration)
         return this
     }
 
@@ -379,7 +394,7 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
      * @param errorIcon The drawable to be set or a null to remove it.
      * @return
      */
-    fun setProgressErrorIcon(errorIcon: Drawable?): AnimatedButton {
+    fun setErrorIcon(errorIcon: Drawable?): AnimatedButton {
         if (errorIcon != null) errorLayout.background = errorIcon
         return this
     }
@@ -389,31 +404,10 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
      * @param doneIcon The drawable to be set.
      * @return
      */
-    fun setProgressDoneIcon(doneIcon: Drawable?): AnimatedButton {
+    fun setDoneIcon(doneIcon: Drawable?): AnimatedButton {
         if (doneIcon != null) doneLayout.background = doneIcon
         return this
     }
-
-//    /**
-//     * Set the error to normal transition flag.
-//     * @param flag he boolean value to update the flag
-//     * @return
-//     */
-//    fun setAutoErrorToNormalTransition(flag: Boolean): AnimatedButton {
-//        autoErrorToNormalTransition = flag
-//        return this
-//    }
-
-    // TODO: shouldn't the setter be only possible through the animations?
-//    /**
-//     * Set the button state.
-//     * @param flag he boolean value to update the flag
-//     * @return
-//     */
-//    fun setState(state: ButtonState): AnimatedButton {
-//        buttonState = state
-//        return this
-//    }
 
     /**
      * Retrieve the button state.
@@ -470,19 +464,24 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     }
 
 
-
     /**
      * Reset animation to get button back to normal state.
      */
     fun resetButtonState() {
+//        buttonLayout.isVisible = true
+//        doneLayout.isVisible = true
+//        errorLayout.isVisible = true
+
         val savedDuration = animationDuration
         buttonAnimator.animationDuration = 0
+
         buttonAnimator.viewExpand(buttonLayout)
         buttonAnimator.viewFadeIn(doneLayout)
         buttonAnimator.viewFadeIn(errorLayout)
         buttonAnimator.viewFadeIn(progressBar)
+
         buttonAnimator.animationDuration = savedDuration
-        buttonLayout.isClickable = true
+
         buttonState = ButtonState.NORMAL
     }
 
@@ -492,7 +491,6 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     fun animateLoadingToNormalState() {
         buttonAnimator.viewExpand(buttonLayout)
         buttonAnimator.viewFadeIn(progressBar) {
-            buttonTextView.visibility = VISIBLE
             buttonAnimator.viewFadeOut(buttonTextView)
         }
         buttonLayout.isClickable = true
@@ -505,7 +503,6 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     fun animateNormalToLoadingState() {
         buttonAnimator.viewShrink(buttonLayout)
         buttonAnimator.viewFadeIn(buttonTextView) {
-            progressBar.visibility = VISIBLE
             buttonAnimator.viewFadeOut(progressBar)
         }
         buttonLayout.isClickable = false
@@ -518,7 +515,6 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     fun animateDoneToNormalState() {
         buttonAnimator.viewExpand(buttonLayout)
         buttonAnimator.viewFadeIn(doneLayout) {
-//            buttonTextView.visibility = VISIBLE
             buttonAnimator.viewFadeOut(buttonTextView)
         }
         buttonLayout.isClickable = true
@@ -529,14 +525,9 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
      * Start animation to convert button to done view.
      */
     fun animateLoadingToDoneState() {
-        val savedDuration = animationDuration
-        buttonAnimator.animationDuration = 300
         buttonAnimator.viewFadeIn(progressBar) {
-            progressBar.visibility = INVISIBLE
-            buttonAnimator.animationDuration = 600
             buttonAnimator.viewFadeOut(doneLayout)
         }
-        buttonAnimator.animationDuration = savedDuration
         buttonLayout.isClickable = false
         buttonState = ButtonState.DONE
     }
@@ -547,7 +538,6 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     fun animateErrorToNormalState() {
         buttonAnimator.viewExpand(buttonLayout)
         buttonAnimator.viewFadeIn(errorLayout) {
-//            buttonTextView.visibility = VISIBLE
             buttonAnimator.viewFadeOut(buttonTextView)
         }
         buttonLayout.isClickable = true
@@ -559,7 +549,6 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
      */
     fun animateLoadingToErrorState() {
         buttonAnimator.viewFadeIn(progressBar) {
-            progressBar.visibility = INVISIBLE
             buttonAnimator.viewFadeOut(errorLayout)
         }
         buttonLayout.isClickable = false

@@ -1,18 +1,14 @@
-package com.mis.animatedbutton.ui
+package com.mis.example.animatedbutton.ui
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.mis.animatedbutton.AnimatedButton
-import com.mis.animatedbutton.R
+import com.mis.example.animatedbutton.R
 
 class MainActivity : AppCompatActivity() {
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

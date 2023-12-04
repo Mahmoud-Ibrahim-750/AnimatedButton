@@ -36,43 +36,45 @@
         tools:visibility="gone" />
 
     <LinearLayout
-        android:id="@+id/progress_done_layout"
+        android:id="@+id/done_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:background="@drawable/ic_default_done"
         android:clickable="false"
         android:focusable="false"
         android:gravity="center"
+        android:orientation="horizontal"
         tools:visibility="invisible">
 
-        <ProgressBar
-            android:id="@+id/progress_done"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+        <ImageView
+            android:id="@+id/done_image_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:clickable="false"
             android:focusable="false"
+            android:importantForAccessibility="no"
             tools:visibility="invisible" />
 
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/progress_error_layout"
+        android:id="@+id/error_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:background="@drawable/ic_default_error"
         android:clickable="false"
         android:focusable="false"
         android:gravity="center"
+        android:orientation="horizontal"
         tools:visibility="invisible">
 
-        <ProgressBar
-            android:id="@+id/progress_error"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+        <ImageView
+            android:id="@+id/error_image_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:clickable="false"
             android:focusable="false"
+            android:importantForAccessibility="no"
             tools:visibility="invisible" />
 
     </LinearLayout>

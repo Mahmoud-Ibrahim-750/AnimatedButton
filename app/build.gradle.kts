@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.mis.animatedbutton"
+    namespace = "com.mis.example.animatedbutton"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.mis.animatedbutton"
+        applicationId = "com.mis.example.animatedbutton"
         minSdk = 21
         targetSdk = 34
         versionCode = 1

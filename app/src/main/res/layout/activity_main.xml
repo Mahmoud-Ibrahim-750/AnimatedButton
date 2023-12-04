@@ -6,58 +6,32 @@
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
 
-    <com.mis.animatedbutton.AnimatedButton
-        android:id="@+id/my_loading_button"
-        android:layout_width="300dp"
-        android:layout_height="60dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:text="Login Button"
-        app:textColor="@color/white"
-        app:textSize="18sp" />
-
     <LinearLayout
         android:id="@+id/login_btn_cont"
         android:layout_width="300dp"
         android:layout_height="60dp"
         android:layout_marginTop="20dp"
         android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/my_loading_button">
+        app:layout_constraintTop_toTopOf="parent">
 
         <com.mis.animatedbutton.AnimatedButton
             android:id="@+id/login_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:backgroundResource="@drawable/signup_background_btn"
+            app:doneIcon="@drawable/ic_default_done"
+            app:doneIconTintColor="@color/green"
+            app:errorIcon="@drawable/ic_default_error"
+            app:errorIconTintColor="@color/red"
+            app:indicatorColor="@color/white"
             app:text="Login"
             app:textColor="@color/white"
             app:textSize="20sp"
-            app:textStyle="bold"
-            app:doneIconTintColor="@color/green"
-            app:errorIconTintColor="@color/red"/>
+            app:textStyle="bold" />
 
     </LinearLayout>
-
-    <Button
-        android:id="@+id/login_btn_orig"
-        android:layout_width="200dp"
-        android:layout_height="55dp"
-        android:layout_marginTop="20dp"
-        android:background="@drawable/signup_background_btn"
-        android:text="Login"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/login_btn_cont" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
