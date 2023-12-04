@@ -1,0 +1,82 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/button_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/default_button_background"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/button_label_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:clickable="false"
+        android:focusable="false"
+        android:gravity="center"
+        android:scaleType="center"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        tools:text="ButtonLabel" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:clickable="false"
+        android:elevation="5dp"
+        android:focusable="false"
+        android:indeterminateTint="@android:color/white"
+        android:scaleType="fitCenter"
+        tools:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/done_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:clickable="false"
+        android:focusable="false"
+        android:gravity="center"
+        android:orientation="horizontal"
+        tools:visibility="invisible">
+
+        <ImageView
+            android:id="@+id/done_image_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:focusable="false"
+            android:importantForAccessibility="no"
+            tools:visibility="invisible" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/error_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:clickable="false"
+        android:focusable="false"
+        android:gravity="center"
+        android:orientation="horizontal"
+        tools:visibility="invisible">
+
+        <ImageView
+            android:id="@+id/error_image_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:focusable="false"
+            android:importantForAccessibility="no"
+            tools:visibility="invisible" />
+
+    </LinearLayout>
+
+</RelativeLayout>
