@@ -4,6 +4,9 @@ plugins {
     id("maven-publish")
 }
 
+group = "com.github.Mahmoud-Ibrahim-750"
+version = "1.0.0"
+
 android {
     namespace = "com.mis.animatedbutton"
     compileSdk = 33
@@ -43,27 +46,90 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-//    publishing {
-//        publications {
-//            register<MavenPublication>("release") {
-//                groupId = "com.my-company"
-//                artifactId = "my-library"
-//                version = "1.0"
+}
+
+
+//group = "com.mis"
+//version = "1.0.0"
 //
-//                afterEvaluate {
-//                    from(components["release"])
+//task sourceJar(type: Jar) {
+//    from sourceSets.main.allJava
+//}
+//
+//publishing {
+//    publications {
+//        mavenJava(MavenPublication) {
+//            artifactId = 'huka-common'
+//            from components.java
+//                    versionMapping {
+//                        usage('java-api') {
+//                            fromResolutionOf('runtimeClasspath')
+//                        }
+//                        usage('java-runtime') {
+//                            fromResolutionResult()
+//                        }
+//                    }
+//            pom {
+//                name = 'Huka common files'
+//                description = 'Huka common files'
+//                licenses {
+//                    license {
+//                        name = 'The Apache License, Version 2.0'
+//                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//                    }
+//                }
+//                developers {
+//                    developer {
+//                        id = 'huka'
+//                        name = 'Huka'
+//                        email = 'mr.kharhums@gmail.com'
+//                    }
 //                }
 //            }
 //        }
 //    }
+//    repositories {
+//        maven {
+//            def releasesRepoUrl = layout.buildDirectory.dir('repos/releases')
+//            def snapshotsRepoUrl = layout.buildDirectory.dir('repos/snapshots')
+//            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+//        }
+//    }
+//}
 
+
+
+dependencies {
+
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.10.0")
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
+
+
+
+//afterEvaluate {
+//    publishing {
+//        publications {
+//            // Creates a Maven publication called "release".
+//            release(MavenPublication) {
+//                from components.release
+//                        groupId = 'com.github.jitpack'
+//                artifactId = 'android-example'
+//                version = '1.0'
+//            }
+//        }
+//    }
+//}
 
 afterEvaluate {
     publishing {
         publications {
             register<MavenPublication>("release") {
-                groupId = "com.mis"
+                groupId = "com.github.Mahmoud-Ibrahim-750"
                 artifactId = "animated-button"
                 version = "1.0.0"
 
@@ -92,14 +158,4 @@ afterEvaluate {
 //            }
 //        }
 //    }
-}
-
-dependencies {
-
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.10.0")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
