@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+    id("maven-publish")
 }
 
 android {
@@ -10,8 +11,20 @@ android {
     defaultConfig {
         minSdk = 21
 
+        aarMetadata {
+            minCompileSdk = 21
+        }
+
+
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
     }
 
     buildTypes {
@@ -30,6 +43,55 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+//    publishing {
+//        publications {
+//            register<MavenPublication>("release") {
+//                groupId = "com.my-company"
+//                artifactId = "my-library"
+//                version = "1.0"
+//
+//                afterEvaluate {
+//                    from(components["release"])
+//                }
+//            }
+//        }
+//    }
+
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            register<MavenPublication>("release") {
+                groupId = "com.mis"
+                artifactId = "animated-button"
+                version = "1.0.0"
+
+                afterEvaluate {
+                    from(components["release"])
+                }
+            }
+        }
+    }
+
+//    publishing {
+//        publications {
+//            release(MavenPublication) {
+//                from components.release
+//
+//                        groupId 'com.tazkiyatech'
+//                artifactId 'android-utils'
+//                version '1.0.0'
+//            }
+//        }
+//
+//        repositories {
+//            maven {
+//                name = 'BuildFolder'
+//                url = "${project.buildDir}/repository"
+//            }
+//        }
+//    }
 }
 
 dependencies {
