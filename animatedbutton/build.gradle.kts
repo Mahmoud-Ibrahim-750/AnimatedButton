@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.Mahmoud-Ibrahim-750"
-version = "1.0.0"
+version = "v1.0.1"
 
 android {
     namespace = "com.mis.animatedbutton"
@@ -125,20 +125,29 @@ dependencies {
 //    }
 //}
 
-afterEvaluate {
-    publishing {
-        publications {
-            register<MavenPublication>("release") {
-                groupId = "com.github.Mahmoud-Ibrahim-750"
-                artifactId = "animated-button"
-                version = "1.0.0"
-
-                afterEvaluate {
-                    from(components["release"])
-                }
-            }
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            groupId = "com.github.Mahmoud-Ibrahim-750"
+            artifactId = "animated-button"
+            version = "v1.0.1"
         }
     }
+}
+//afterEvaluate {
+//    publishing {
+//        publications {
+//            register<MavenPublication>("release") {
+//                groupId = "com.github.Mahmoud-Ibrahim-750"
+//                artifactId = "animated-button"
+//                version = "1.0.0"
+//
+//                afterEvaluate {
+//                    from(components["release"])
+//                }
+//            }
+//        }
+//    }
 
 //    publishing {
 //        publications {
@@ -158,4 +167,4 @@ afterEvaluate {
 //            }
 //        }
 //    }
-}
+//}
