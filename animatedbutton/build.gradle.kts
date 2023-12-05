@@ -4,8 +4,8 @@ plugins {
     id("maven-publish")
 }
 
-group = "com.github.Mahmoud-Ibrahim-750"
-version = "v1.0.1"
+//group = "com.github.Mahmoud-Ibrahim-750"
+//version = "v1.0.1"
 
 android {
     namespace = "com.mis.animatedbutton"
@@ -134,7 +134,20 @@ publishing {
         }
     }
 }
-//afterEvaluate {
+afterEvaluate {
+    publishing {
+        publications {
+            register<MavenPublication>("release") {
+                groupId = "com.github.Mahmoud-Ibrahim-750"
+                artifactId = "animated-button"
+                version = "1.0.0"
+
+                afterEvaluate {
+                    from(components["release"])
+                }
+            }
+        }
+    }
 //    publishing {
 //        publications {
 //            register<MavenPublication>("release") {
@@ -147,7 +160,14 @@ publishing {
 //                }
 //            }
 //        }
+//        repositories {
+//            maven {
+//                name = "myrepo"
+//                url = uri("${project.buildDir}/repo")
+//            }
+//        }
 //    }
+}
 
 //    publishing {
 //        publications {
