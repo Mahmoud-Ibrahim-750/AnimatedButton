@@ -11,21 +11,19 @@ android {
     defaultConfig {
         minSdk = 21
 
-        aarMetadata {
-            minCompileSdk = 21
-        }
-
-
+//        aarMetadata {
+//            minCompileSdk = 21
+//        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
+//    publishing {
+//        singleVariant("release") {
+//            withSourcesJar()
+//        }
+//    }
 
     buildTypes {
         release {
@@ -37,28 +35,29 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
-//    publishing {
-//        publications {
-//            register<MavenPublication>("release") {
-//                groupId = "com.my-company"
-//                artifactId = "my-library"
-//                version = "1.0"
-//
-//                afterEvaluate {
-//                    from(components["release"])
-//                }
-//            }
-//        }
-//    }
-
 }
 
+afterEvaluate {
+    publishing {
+        publications {
+            register<MavenPublication>("release") {
+                from(components["release"])
+
+                groupId = "com.mis"
+                artifactId = "animated-button"
+                version = "1.0.0"
+            }
+        }
+    }
+}
+
+/*
 afterEvaluate {
     publishing {
         publications {
@@ -73,26 +72,8 @@ afterEvaluate {
             }
         }
     }
-
-//    publishing {
-//        publications {
-//            release(MavenPublication) {
-//                from components.release
-//
-//                        groupId 'com.tazkiyatech'
-//                artifactId 'android-utils'
-//                version '1.0.0'
-//            }
-//        }
-//
-//        repositories {
-//            maven {
-//                name = 'BuildFolder'
-//                url = "${project.buildDir}/repository"
-//            }
-//        }
-//    }
 }
+ */
 
 dependencies {
 
