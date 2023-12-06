@@ -11,19 +11,9 @@ android {
     defaultConfig {
         minSdk = 21
 
-//        aarMetadata {
-//            minCompileSdk = 21
-//        }
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
-
-//    publishing {
-//        singleVariant("release") {
-//            withSourcesJar()
-//        }
-//    }
 
     buildTypes {
         release {
@@ -56,24 +46,6 @@ afterEvaluate {
         }
     }
 }
-
-/*
-afterEvaluate {
-    publishing {
-        publications {
-            register<MavenPublication>("release") {
-                groupId = "com.mis"
-                artifactId = "animated-button"
-                version = "1.0.0"
-
-                afterEvaluate {
-                    from(components["release"])
-                }
-            }
-        }
-    }
-}
- */
 
 dependencies {
 

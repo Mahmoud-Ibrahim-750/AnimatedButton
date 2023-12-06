@@ -37,12 +37,12 @@ Step 2. Add the dependency:
 
 ```gradle
 dependencies {
-    implementation 'com.github.Mahmoud-Ibrahim-750:AnimatedButton:v1.0.0'
+    implementation 'com.github.Mahmoud-Ibrahim-750:AnimatedButton:1.0.3'
 }
 ```
 
 
-For the latest version, check the [releases page](https://github.com/Mahmoud-Ibrahim-750/AnimatedButton/releases), or the [JitPack page](https://jitpack.io/#Mahmoud-Ibrahim-750/AnimatedButton/Tag).
+For the latest version, check the [releases page](https://github.com/Mahmoud-Ibrahim-750/AnimatedButton/releases), or the [JitPack page](https://jitpack.io/#Mahmoud-Ibrahim-750/AnimatedButton).
 
 ## Usage Example
 
