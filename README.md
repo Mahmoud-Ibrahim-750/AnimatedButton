@@ -37,7 +37,7 @@ Step 2. Add the dependency:
 
 ```gradle
 dependencies {
-    implementation 'com.github.Mahmoud-Ibrahim-750:AnimatedButton:1.0.3'
+    implementation 'com.github.Mahmoud-Ibrahim-750:AnimatedButton:1.0.4'
 }
 ```
 
