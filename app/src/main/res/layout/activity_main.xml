@@ -6,8 +6,62 @@
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
 
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/auto_loading_btn_label"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/login_btn_cont"
+        app:layout_constraintStart_toStartOf="@id/login_btn_cont"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
     <LinearLayout
         android:id="@+id/login_btn_cont"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@+id/custom_login_textview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <com.mis.animatedbutton.AnimatedButton
+            android:id="@+id/login_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:backgroundResource="@drawable/signup_background_btn"
+            app:doneIcon="@drawable/ic_default_done"
+            app:doneIconTintColor="@color/green"
+            app:errorIcon="@drawable/ic_default_error"
+            app:errorIconTintColor="@color/red"
+            app:indicatorColor="@color/white"
+            app:text="Login"
+            app:textColor="@color/white"
+            app:textSize="20sp"
+            app:textStyle="bold" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/custom_login_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="@string/manual_loading_button"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/custom_login_btn_cont"
+        app:layout_constraintStart_toStartOf="@id/custom_login_btn_cont"
+        app:layout_constraintTop_toBottomOf="@id/login_btn_cont" />
+
+    <LinearLayout
+        android:id="@+id/custom_login_btn_cont"
         android:layout_width="300dp"
         android:layout_height="60dp"
         android:layout_marginTop="20dp"
@@ -15,10 +69,10 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/custom_login_textview">
 
         <com.mis.animatedbutton.AnimatedButton
-            android:id="@+id/login_btn"
+            android:id="@+id/custom_login_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:backgroundResource="@drawable/signup_background_btn"

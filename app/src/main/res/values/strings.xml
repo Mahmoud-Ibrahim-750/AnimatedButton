@@ -4,4 +4,6 @@
     <string name="done">Done</string>
     <string name="error">Error</string>
     <string name="normal">Normal</string>
+    <string name="auto_loading_btn_label">Auto-loading button</string>
+    <string name="manual_loading_button">Manual-loading button</string>
 </resources>

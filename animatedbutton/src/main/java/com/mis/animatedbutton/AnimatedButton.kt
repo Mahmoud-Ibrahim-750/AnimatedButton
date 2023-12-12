@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
+import com.mis.animatedbutton.ButtonAnimation.*
 import com.mis.animatedbutton.Utils.getColor
 import com.mis.animatedbutton.Utils.getRawDimension
 import com.mis.animatedbutton.Utils.setColorFilter
@@ -143,6 +144,11 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
      * Button click listener.
      */
     private var onClickListener: OnClickListener? = null
+
+    /**
+     * Auto-loading when clicked indicator (default true).
+     */
+    private var autoLoading = true
 
 
     // TODO: implement the builder pattern here
@@ -417,6 +423,16 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     }
 
     /**
+     * Set the auto-loading behavior indicator.
+     *
+     * @param autoLoad A boolean value to be set.
+     */
+    fun setAutoLoading(autoLoad: Boolean): AnimatedButton {
+        autoLoading = autoLoad
+        return this
+    }
+
+    /**
      * A customizable click listener interface. That's different that the default interface
      * that provides the default stated behaviour.
      */
@@ -432,21 +448,24 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     }
 
     /**
-     * The default click behaviour.
+     * The default onClick method.
      */
     override fun onClick(view: View) {
         if (view.id != R.id.button_layout) return
 
+        if (!autoLoading) {
+            onClickListener?.onClick(view)
+            return
+        }
+
         when (buttonState) {
             ButtonState.NORMAL -> {
                 animateNormalToLoadingState()
-                buttonState = ButtonState.LOADING
             }
 
             ButtonState.LOADING -> {
                 // un-reachable case by default since the button is disabled while loading
                 animateLoadingToNormalState()
-                buttonState = ButtonState.NORMAL
             }
 
             ButtonState.DONE -> {
@@ -467,11 +486,7 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     /**
      * Reset animation to get button back to normal state.
      */
-    fun resetButtonState() {
-//        buttonLayout.isVisible = true
-//        doneLayout.isVisible = true
-//        errorLayout.isVisible = true
-
+    private fun resetButtonState() {
         val savedDuration = animationDuration
         buttonAnimator.animationDuration = 0
 
@@ -488,7 +503,7 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     /**
      * Start animation to get back to normal state.
      */
-    fun animateLoadingToNormalState() {
+    private fun animateLoadingToNormalState() {
         buttonAnimator.viewExpand(buttonLayout)
         buttonAnimator.viewFadeIn(progressBar) {
             buttonAnimator.viewFadeOut(buttonTextView)
@@ -500,7 +515,7 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     /**
      * Start animation to convert button to loading button
      */
-    fun animateNormalToLoadingState() {
+    private fun animateNormalToLoadingState() {
         buttonAnimator.viewShrink(buttonLayout)
         buttonAnimator.viewFadeIn(buttonTextView) {
             buttonAnimator.viewFadeOut(progressBar)
@@ -512,7 +527,7 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     /**
      * Start animation to get back to normal button from done button.
      */
-    fun animateDoneToNormalState() {
+    private fun animateDoneToNormalState() {
         buttonAnimator.viewExpand(buttonLayout)
         buttonAnimator.viewFadeIn(doneLayout) {
             buttonAnimator.viewFadeOut(buttonTextView)
@@ -524,7 +539,7 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     /**
      * Start animation to convert button to done view.
      */
-    fun animateLoadingToDoneState() {
+    private fun animateLoadingToDoneState() {
         buttonAnimator.viewFadeIn(progressBar) {
             buttonAnimator.viewFadeOut(doneLayout)
         }
@@ -535,7 +550,7 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     /**
      * Start animation to get back to normal button from error view
      */
-    fun animateErrorToNormalState() {
+    private fun animateErrorToNormalState() {
         buttonAnimator.viewExpand(buttonLayout)
         buttonAnimator.viewFadeIn(errorLayout) {
             buttonAnimator.viewFadeOut(buttonTextView)
@@ -547,11 +562,30 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     /**
      * Start animation to convert button to error view
      */
-    fun animateLoadingToErrorState() {
+    private fun animateLoadingToErrorState() {
         buttonAnimator.viewFadeIn(progressBar) {
             buttonAnimator.viewFadeOut(errorLayout)
         }
         buttonLayout.isClickable = false
         buttonState = ButtonState.ERROR
     }
+
+
+    /**
+     * The main method for animations.
+     *
+     * @param animation A specific animation type.
+     */
+    fun showAnimation(animation: ButtonAnimation) {
+        when (animation) {
+            ResetToNormal -> resetButtonState()
+            NormalToLoading -> animateNormalToLoadingState()
+            LoadingToNormal -> animateLoadingToNormalState()
+            LoadingToDone -> animateLoadingToDoneState()
+            LoadingToError -> animateLoadingToErrorState()
+            DoneToNormal -> animateDoneToNormalState()
+            ErrorToNormal -> animateErrorToNormalState()
+        }
+    }
+
 }
