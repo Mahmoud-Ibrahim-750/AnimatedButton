@@ -2,43 +2,49 @@ package com.mis.animatedbutton
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.content.res.TypedArray
 import android.graphics.Typeface
-import android.graphics.drawable.Drawable
 import android.util.AttributeSet
-import android.view.LayoutInflater
+import android.util.TypedValue
 import android.view.View
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
-import com.mis.animatedbutton.ButtonAnimation.*
-import com.mis.animatedbutton.Utils.getColor
+import androidx.core.content.ContextCompat
+import androidx.core.view.setPadding
+import com.mis.animatedbutton.ButtonAnimation.DoneToNormal
+import com.mis.animatedbutton.ButtonAnimation.ErrorToNormal
+import com.mis.animatedbutton.ButtonAnimation.LoadingToDone
+import com.mis.animatedbutton.ButtonAnimation.LoadingToError
+import com.mis.animatedbutton.ButtonAnimation.LoadingToNormal
+import com.mis.animatedbutton.ButtonAnimation.NormalToLoading
+import com.mis.animatedbutton.ButtonAnimation.ResetToNormal
 import com.mis.animatedbutton.Utils.getRawDimension
-import com.mis.animatedbutton.Utils.setColorFilter
 
 
-class AnimatedButton : RelativeLayout, View.OnClickListener {
+class AnimatedButton @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : RelativeLayout(context, attrs, defStyleAttr), View.OnClickListener {
 
     /*
      * Default colors.
      */
-    private val defaultProgressColor = resources.getColor(R.color.colorAccent, context)
-    private var defaultButtonColor = resources.getColor(R.color.colorPrimary, context)
-    private var defaultIconTintColor = resources.getColor(R.color.colorAccent, context)
-    private var defaultTextColor = resources.getColor(R.color.white, context)
+    private val defaultProgressColor = ContextCompat.getColor(context, R.color.white)
+    private var defaultTextColor = ContextCompat.getColor(context, R.color.white)
 
     /*
      * Other default values.
      */
     private val defaultTextSize = 18f
     private val defaultTextStyle = Typeface.NORMAL
-    private val defaultFullyExpandedButtonWidth = 1500
     private val defaultAnimationDuration = 500
     private val defaultFadeAnimationDuration = defaultAnimationDuration / 2
     private val defaultText = "Button"
-    private val defaultBackgroundResVal = -1
+    private val defaultSuccessIconRes = R.drawable.ic_default_done
+    private val defaultErrorIconRes = R.drawable.ic_default_error
+    private val defaultAutoLoadingBehavior = true
 
     /**
      * Button states.
@@ -49,74 +55,6 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
         DONE,
         ERROR
     }
-
-//    private val TAG = AnimatedButton::class.java.simpleName
-
-    /**
-     * Button width when fully expanded.
-     */
-    private var buttonExpandedWidth = defaultFullyExpandedButtonWidth
-
-    /**
-     * Button background color.
-     */
-    private var buttonBackgroundColor = defaultButtonColor
-
-    /**
-     * Done icon tint color.
-     */
-    private var doneIconTintColor = defaultIconTintColor
-
-    /**
-     * Error icon tint color.
-     */
-    private var errorIconTintColor = defaultIconTintColor
-
-    /**
-     * Button Background resource.
-     */
-    private var buttonBackgroundRes = defaultBackgroundResVal
-
-    /**
-     * Button progress indicator color.
-     */
-    private var progressIndicatorColor = defaultProgressColor
-
-    /**
-     * Button text value
-     */
-    private var buttonText: String = defaultText
-
-    /**
-     * Button text size.
-     */
-    private var buttonTextSize = defaultTextSize
-
-    /**
-     * Button text style.
-     */
-    private var buttonTextStyle = defaultTextStyle
-
-    /**
-     * Button text color.
-     */
-    private var buttonTextColor = defaultTextColor
-
-    /**
-     * Button error icon.
-     */
-    private var errorDrawable: Drawable? = null
-
-    /**
-     * Button done icon.
-     */
-    private var doneDrawable: Drawable? = null
-
-//    /**
-//     * A flag to determine whether or not to change button state from error to normal
-//     * automatically after some seconds.
-//     */
-//    private var autoErrorToNormalTransition = false
 
     /**
      * Button animation transition duration.
@@ -131,14 +69,14 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     /**
      * Button state.
      */
-    private var buttonState = ButtonState.NORMAL
+    private var currentState = ButtonState.NORMAL
 
     // TODO: maybe implement factory pattern to inject this object instead of hilt? does hilt
     //  affect library user (project).
     /**
      *
      */
-    private lateinit var buttonAnimator: ButtonAnimator
+    private var buttonAnimator: ButtonAnimator
 
     /**
      * Button click listener.
@@ -146,280 +84,177 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
     private var onClickListener: OnClickListener? = null
 
     /**
-     * Auto-loading when clicked indicator (default true).
+     * Auto-loading behavior when clicked indicator (default true).
      */
-    private var autoLoading = true
+    private var autoLoading = defaultAutoLoadingBehavior
 
 
-    // TODO: implement the builder pattern here
     /**
      * Button views.
      */
-    private lateinit var buttonLayout: RelativeLayout
-    private lateinit var buttonTextView: TextView
-    private lateinit var progressBar: ProgressBar
-    private lateinit var doneLayout: LinearLayout
-    private lateinit var doneImageView: ImageView
-    private lateinit var errorLayout: LinearLayout
-    private lateinit var errorImageView: ImageView
+    private val textView: TextView
+    private val progressBar: ProgressBar
+    private val successImageView: ImageView
+    private val failureImageView: ImageView
 
-
-    /*
-     * Constructors
-     */
-    constructor(context: Context?) : super(context) {
-        init()
-    }
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init()
-        retrieveAndSetAttributes(attrs, context)
-        resetButtonState()
-    }
-
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(
-        context, attrs, defStyleAttr
-    ) {
-        init()
-    }
-
-    /**
-     * Initialize class instance (inflate layout, init views and other objects.
-     */
-    private fun init() {
-        val view =
-            LayoutInflater.from(context).inflate(R.layout.default_animated_button_layout, this)
-        buttonLayout = view.findViewById(R.id.button_layout)
-        buttonTextView = view.findViewById(R.id.button_label_tv)
-        progressBar = view.findViewById(R.id.progress_bar)
-        doneLayout = view.findViewById(R.id.done_layout)
-        doneImageView = view.findViewById(R.id.done_image_view)
-        errorLayout = view.findViewById(R.id.error_layout)
-        errorImageView = view.findViewById(R.id.error_image_view)
-
-        // set the default click listener add the default behaviour of the button
-        // however the custom click listener can be set or not (null)
-        buttonLayout.setOnClickListener(this)
-        buttonAnimator =
-            ButtonAnimator(buttonExpandedWidth, animationDuration, fadeAnimationDuration)
-    }
-
-    /**
-     * Set attributes from xml.
-     *
-     * @param attrs An AttributeSet instance containing the attributes to be set
-     * @param context A context of where the button is initialized
-     */
-    private fun retrieveAndSetAttributes(attrs: AttributeSet, context: Context) {
-        val styledAttrTypedArray = context.theme.obtainStyledAttributes(
-            attrs, R.styleable.AnimatedButton, 0, 0
+    init {
+        // Initialize button
+        isClickable = true
+        isFocusable = true
+        setPadding(
+            TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                12f,
+                resources.displayMetrics
+            ).toInt()
         )
 
-        retrieveAttributes(styledAttrTypedArray)
-        setRetrievedAttributes()
+        // Initialize and add child views
+        textView = createTextView(attrs)
+        progressBar = createProgressBar(attrs)
+        successImageView = createSuccessImageView(attrs)
+        failureImageView = createFailureImageView(attrs)
 
-        styledAttrTypedArray.recycle()
+        addView(textView)
+        addView(progressBar)
+        addView(successImageView)
+        addView(failureImageView)
+
+        // set other attributes (e.g., animationDuration)
+        setOtherAttributes(attrs)
+
+        buttonAnimator = ButtonAnimator(animationDuration, fadeAnimationDuration)
+        this.setOnClickListener(this)
+
+        // Set initial visibility based on the default state (NORMAL)
+        updateVisibility()
     }
 
-    /**
-     * Retrieve XML-passed attributes.
-     *
-     * @param styledAttrTypedArray The array containing attribute values.
-     */
-    private fun retrieveAttributes(styledAttrTypedArray: TypedArray) {
-        styledAttrTypedArray.apply {
-            buttonText = getString(R.styleable.AnimatedButton_text) ?: defaultText
-            buttonTextSize = getRawDimension(R.styleable.AnimatedButton_textSize, defaultTextSize)
-            buttonTextStyle = getInt(R.styleable.AnimatedButton_textStyle, defaultTextStyle)
-            buttonTextColor = getColor(R.styleable.AnimatedButton_textColor, defaultTextColor)
-
+    private fun setOtherAttributes(attrs: AttributeSet?) {
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AnimatedButton)
+        typedArray.apply {
             animationDuration =
                 getInteger(R.styleable.AnimatedButton_animationDuration, defaultAnimationDuration)
+            autoLoading =
+                getBoolean(R.styleable.AnimatedButton_autoLoading, defaultAutoLoadingBehavior)
+        }
 
-            buttonBackgroundColor =
-                getColor(R.styleable.AnimatedButton_backgroundColor, defaultButtonColor)
+        typedArray.recycle()
+    }
 
-            buttonBackgroundRes =
-                getResourceId(
-                    R.styleable.AnimatedButton_backgroundResource,
-                    defaultBackgroundResVal
+
+    private fun createTextView(attrs: AttributeSet?): TextView {
+        val textView = TextView(context).apply {
+            val params = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+            params.addRule(CENTER_IN_PARENT, TRUE)
+            layoutParams = params
+            isFocusable = false
+            isClickable = false
+
+            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AnimatedButton)
+
+            text = typedArray.getString(R.styleable.AnimatedButton_text) ?: defaultText
+            textSize =
+                typedArray.getRawDimension(R.styleable.AnimatedButton_textSize, defaultTextSize)
+            setTypeface(
+                null,
+                typedArray.getInt(R.styleable.AnimatedButton_textStyle, defaultTextStyle)
+            )
+            setTextColor(
+                typedArray.getColor(
+                    R.styleable.AnimatedButton_textColor,
+                    defaultTextColor
                 )
+            )
 
-            // TODO: Until escaping the pipe symbol is done, this will remain commented
-//            // Get the background attribute value
-//            getValue(R.styleable.AnimatedButton_background, backgroundValue)
-//
-//            // Check the type of the attribute value
-//            if (backgroundValue.type == TypedValue.TYPE_REFERENCE) {
-//                // It's a resource (drawable, color, etc.)
-//                val resourceId = backgroundValue.resourceId
-//                // Set the resource
-//                buttonLayout.setBackgroundResource(resourceId)
-//            } else if (backgroundValue.type == TypedValue.TYPE_INT_COLOR_ARGB8
-//                || backgroundValue.type == TypedValue.TYPE_INT_COLOR_ARGB4
-//                || backgroundValue.type == TypedValue.TYPE_INT_COLOR_RGB8
-//                || backgroundValue.type == TypedValue.TYPE_INT_COLOR_RGB4
-//            ) {
-//                // It's a color
-//                val colorValue = backgroundValue.data
-//                // Set the color
-//                buttonLayout.setBackgroundColor(colorValue)
-//            }
-
-            doneIconTintColor =
-                getColor(R.styleable.AnimatedButton_doneIconTintColor, defaultIconTintColor)
-
-            errorIconTintColor =
-                getColor(R.styleable.AnimatedButton_errorIconTintColor, defaultIconTintColor)
-
-            progressIndicatorColor =
-                getColor(R.styleable.AnimatedButton_indicatorColor, defaultProgressColor)
-
-            errorDrawable = getDrawable(R.styleable.AnimatedButton_errorIcon)
-            doneDrawable = getDrawable(R.styleable.AnimatedButton_doneIcon)
-//            autoErrorToNormalTransition =
-//                getBoolean(R.styleable.AnimatedButton_returnToNormalAfterError, true)
+            typedArray.recycle()
         }
+        return textView
     }
 
-    /**
-     * Set the retrieved attribute values to the corresponding variable of the button instance
-     */
-    private fun setRetrievedAttributes() {
-        buttonTextView.text = buttonText
-        buttonTextView.textSize = buttonTextSize
-        buttonTextView.setTypeface(null, buttonTextStyle)
-        buttonTextView.setTextColor(buttonTextColor)
+    private fun createProgressBar(attrs: AttributeSet?): ProgressBar {
+        val progressBar = ProgressBar(context).apply {
+            val params = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+            params.addRule(CENTER_IN_PARENT, TRUE)
+            layoutParams = params
+            isFocusable = false
+            isClickable = false
 
-        if (buttonBackgroundRes != defaultBackgroundResVal) {
-            buttonLayout.setBackgroundResource(buttonBackgroundRes)
+            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AnimatedButton)
+            val tintList = ColorStateList.valueOf(
+                typedArray.getColor(R.styleable.AnimatedButton_indicatorColor, defaultProgressColor)
+            )
+            indeterminateTintList = tintList
+
+            typedArray.recycle()
         }
-        if (buttonBackgroundColor != defaultButtonColor) {
-            buttonLayout.setBackgroundColor(buttonBackgroundColor)
+        return progressBar
+    }
+
+    private fun createSuccessImageView(attrs: AttributeSet?): ImageView {
+        val imageView = ImageView(context).apply {
+            val params = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+            params.addRule(CENTER_IN_PARENT, TRUE)
+            layoutParams = params
+            isFocusable = false
+            isClickable = false
+
+            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AnimatedButton)
+            setImageResource(
+                typedArray.getResourceId(
+                    R.styleable.AnimatedButton_successIcon,
+                    defaultSuccessIconRes
+                )
+            )
+            val tintList = ColorStateList.valueOf(
+                typedArray.getColor(
+                    R.styleable.AnimatedButton_successIconTint,
+                    defaultProgressColor
+                )
+            )
+            imageTintList = tintList
+
+            typedArray.recycle()
         }
-
-        val doneTintList = ColorStateList.valueOf(doneIconTintColor)
-        doneImageView.imageTintList = doneTintList
-
-        val errorTintList = ColorStateList.valueOf(errorIconTintColor)
-        errorImageView.imageTintList = errorTintList
-
-        // TODO: use setters for other attributes if possible
-        setProgressIndicatorColor(progressIndicatorColor)
-
-        errorDrawable?.let { errorImageView.setImageDrawable(it) }
-        doneDrawable?.let { doneImageView.setImageDrawable(it) }
+        return imageView
     }
 
-    /**
-     * Set button text.
-     *
-     * @param string The string to be set.
-     * @return
-     */
-    fun setText(string: String?): AnimatedButton {
-        buttonTextView.text = string
-        return this
+
+    private fun createFailureImageView(attrs: AttributeSet?): ImageView {
+        val imageView = ImageView(context).apply {
+            val params = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+            params.addRule(CENTER_IN_PARENT, TRUE)
+            layoutParams = params
+            isFocusable = false
+            isClickable = false
+
+            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AnimatedButton)
+            setImageResource(
+                typedArray.getResourceId(
+                    R.styleable.AnimatedButton_failureIcon,
+                    defaultErrorIconRes
+                )
+            )
+            val tintList = ColorStateList.valueOf(
+                typedArray.getColor(
+                    R.styleable.AnimatedButton_failureIconTint,
+                    defaultProgressColor
+                )
+            )
+            imageTintList = tintList
+
+            typedArray.recycle()
+        }
+        return imageView
     }
 
-    /**
-     * Set button animation duration.
-     *
-     * @param animDuration The time to be set.
-     * @return
-     */
-    fun setAnimationDuration(animDuration: Int, fadeAnimDuration: Int): AnimatedButton {
-        buttonAnimator = ButtonAnimator(buttonExpandedWidth, animDuration, fadeAnimDuration)
-        return this
-    }
-
-    /**
-     * Set button background color.
-     *
-     * @param color Color to be set.
-     * @return
-     */
-    fun setButtonBackgroundColor(color: Int): AnimatedButton {
-        buttonLayout.setBackgroundColor(color)
-        return this
-    }
-
-    /**
-     * Set button background color.
-     *
-     * @param resId Resource to be set.
-     * @return
-     */
-    fun setButtonBackgroundResource(resId: Int): AnimatedButton {
-        buttonLayout.setBackgroundResource(resId)
-        return this
-    }
-
-    /**
-     * Set progress indicator color.
-     *
-     * @param color The color to be set.
-     */
-    fun setProgressIndicatorColor(color: Int): AnimatedButton {
-        progressBar.setColorFilter(color)
-        return this
-    }
-
-    /**
-     * Set text size.
-     *
-     * @param size The size to be set.
-     */
-    fun setTextSize(size: Float): AnimatedButton {
-        buttonTextView.textSize = size
-        return this
-    }
-
-    /**
-     * Set text style.
-     *
-     * @param typeface The typeface from which a style is retrieved.
-     */
-    fun setTextStyle(typeface: Typeface): AnimatedButton {
-        buttonTextView.typeface = typeface
-        return this
-    }
-
-    /**
-     * Set text color.
-     * @param color The color to be set.
-     * @return
-     */
-    fun setTextColor(color: Int): AnimatedButton {
-        buttonTextView.setTextColor(resources.getColor(color, context))
-        return this
-    }
-
-    /**
-     * Set progress indicator error icon.
-     * @param errorIcon The drawable to be set or a null to remove it.
-     * @return
-     */
-    fun setErrorIcon(errorIcon: Drawable?): AnimatedButton {
-        if (errorIcon != null) errorLayout.background = errorIcon
-        return this
-    }
-
-    /**
-     * Set progress indicator done icon.
-     * @param doneIcon The drawable to be set.
-     * @return
-     */
-    fun setDoneIcon(doneIcon: Drawable?): AnimatedButton {
-        if (doneIcon != null) doneLayout.background = doneIcon
-        return this
-    }
-
-    /**
-     * Retrieve the button state.
-     */
-    fun getState(): ButtonState {
-        return buttonState
+    // Method to update visibility based on the current state
+    private fun updateVisibility() {
+        // Implement logic to set visibility for each view based on the currentState
+        textView.alpha = 1f
+        progressBar.alpha = 0f
+        successImageView.alpha = 0f
+        failureImageView.alpha = 0f
     }
 
     /**
@@ -451,14 +286,12 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
      * The default onClick method.
      */
     override fun onClick(view: View) {
-        if (view.id != R.id.button_layout) return
-
         if (!autoLoading) {
             onClickListener?.onClick(view)
             return
         }
 
-        when (buttonState) {
+        when (currentState) {
             ButtonState.NORMAL -> {
                 animateNormalToLoadingState()
             }
@@ -482,6 +315,13 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
         onClickListener?.onClick(view)
     }
 
+    /**
+     * Checks whether or not the button is in an animation.
+     *
+     * @return A boolean, true if the button is animating and false otherwise.
+     */
+    fun isAnimating() = buttonAnimator.isAnimating()
+
 
     /**
      * Reset animation to get button back to normal state.
@@ -490,50 +330,50 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
         val savedDuration = animationDuration
         buttonAnimator.animationDuration = 0
 
-        buttonAnimator.viewExpand(buttonLayout)
-        buttonAnimator.viewFadeIn(doneLayout)
-        buttonAnimator.viewFadeIn(errorLayout)
+//        buttonAnimator.viewExpand(this)
+        buttonAnimator.viewFadeIn(successImageView)
+        buttonAnimator.viewFadeIn(failureImageView)
         buttonAnimator.viewFadeIn(progressBar)
 
         buttonAnimator.animationDuration = savedDuration
 
-        buttonState = ButtonState.NORMAL
+        currentState = ButtonState.NORMAL
     }
 
     /**
      * Start animation to get back to normal state.
      */
     private fun animateLoadingToNormalState() {
-        buttonAnimator.viewExpand(buttonLayout)
+        buttonAnimator.viewExpand(this)
         buttonAnimator.viewFadeIn(progressBar) {
-            buttonAnimator.viewFadeOut(buttonTextView)
+            buttonAnimator.viewFadeOut(textView)
         }
-        buttonLayout.isClickable = true
-        buttonState = ButtonState.NORMAL
+        this.isClickable = true
+        currentState = ButtonState.NORMAL
     }
 
     /**
      * Start animation to convert button to loading button
      */
     private fun animateNormalToLoadingState() {
-        buttonAnimator.viewShrink(buttonLayout)
-        buttonAnimator.viewFadeIn(buttonTextView) {
-            buttonAnimator.viewFadeOut(progressBar)
+        buttonAnimator.viewShrink(this)
+        buttonAnimator.viewFadeIn(textView, true) {
+            buttonAnimator.viewFadeOut(progressBar, true)
         }
-        buttonLayout.isClickable = false
-        buttonState = ButtonState.LOADING
+        this.isClickable = false
+        currentState = ButtonState.LOADING
     }
 
     /**
      * Start animation to get back to normal button from done button.
      */
     private fun animateDoneToNormalState() {
-        buttonAnimator.viewExpand(buttonLayout)
-        buttonAnimator.viewFadeIn(doneLayout) {
-            buttonAnimator.viewFadeOut(buttonTextView)
+        buttonAnimator.viewExpand(this)
+        buttonAnimator.viewFadeIn(successImageView, true) {
+            buttonAnimator.viewFadeOut(textView, true)
         }
-        buttonLayout.isClickable = true
-        buttonState = ButtonState.NORMAL
+        this.isClickable = true
+        currentState = ButtonState.NORMAL
     }
 
     /**
@@ -541,22 +381,22 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
      */
     private fun animateLoadingToDoneState() {
         buttonAnimator.viewFadeIn(progressBar) {
-            buttonAnimator.viewFadeOut(doneLayout)
+            buttonAnimator.viewFadeOut(successImageView)
         }
-        buttonLayout.isClickable = false
-        buttonState = ButtonState.DONE
+        this.isClickable = false
+        currentState = ButtonState.DONE
     }
 
     /**
      * Start animation to get back to normal button from error view
      */
     private fun animateErrorToNormalState() {
-        buttonAnimator.viewExpand(buttonLayout)
-        buttonAnimator.viewFadeIn(errorLayout) {
-            buttonAnimator.viewFadeOut(buttonTextView)
+        buttonAnimator.viewExpand(this)
+        buttonAnimator.viewFadeIn(failureImageView) {
+            buttonAnimator.viewFadeOut(textView)
         }
-        buttonLayout.isClickable = true
-        buttonState = ButtonState.NORMAL
+        this.isClickable = true
+        currentState = ButtonState.NORMAL
     }
 
     /**
@@ -564,10 +404,10 @@ class AnimatedButton : RelativeLayout, View.OnClickListener {
      */
     private fun animateLoadingToErrorState() {
         buttonAnimator.viewFadeIn(progressBar) {
-            buttonAnimator.viewFadeOut(errorLayout)
+            buttonAnimator.viewFadeOut(failureImageView)
         }
-        buttonLayout.isClickable = false
-        buttonState = ButtonState.ERROR
+        this.isClickable = false
+        currentState = ButtonState.ERROR
     }
 
 
