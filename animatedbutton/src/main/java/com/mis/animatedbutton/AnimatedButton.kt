@@ -2,7 +2,7 @@ package com.mis.animatedbutton
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Typeface
+import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
@@ -10,7 +10,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
+import androidx.annotation.RequiresApi
 import androidx.core.view.setPadding
 import com.mis.animatedbutton.ButtonAnimation.DoneToNormal
 import com.mis.animatedbutton.ButtonAnimation.ErrorToNormal
@@ -19,32 +19,25 @@ import com.mis.animatedbutton.ButtonAnimation.LoadingToError
 import com.mis.animatedbutton.ButtonAnimation.LoadingToNormal
 import com.mis.animatedbutton.ButtonAnimation.NormalToLoading
 import com.mis.animatedbutton.ButtonAnimation.ResetToNormal
-import com.mis.animatedbutton.Utils.getRawDimension
+import com.mis.animatedbutton.ViewProvider.createFailureImageView
+import com.mis.animatedbutton.ViewProvider.createProgressBar
+import com.mis.animatedbutton.ViewProvider.createSuccessImageView
+import com.mis.animatedbutton.ViewProvider.createTextView
 
 
+/**
+ * AnimatedButton is a custom view that represents a button with various states and animations.
+ * It includes features such as loading indicator, success, and failure states with corresponding animations.
+ *
+ * @param context The context in which the button is created.
+ * @param attrs The AttributeSet containing custom attributes for the button.
+ * @param defStyleAttr An attribute in the current theme that contains a reference to a style resource defining default values for the view.
+ */
 class AnimatedButton @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : RelativeLayout(context, attrs, defStyleAttr), View.OnClickListener {
-
-    /*
-     * Default colors.
-     */
-    private val defaultProgressColor = ContextCompat.getColor(context, R.color.white)
-    private var defaultTextColor = ContextCompat.getColor(context, R.color.white)
-
-    /*
-     * Other default values.
-     */
-    private val defaultTextSize = 18f
-    private val defaultTextStyle = Typeface.NORMAL
-    private val defaultAnimationDuration = 500
-    private val defaultFadeAnimationDuration = defaultAnimationDuration / 2
-    private val defaultText = "Button"
-    private val defaultSuccessIconRes = R.drawable.ic_default_done
-    private val defaultErrorIconRes = R.drawable.ic_default_error
-    private val defaultAutoLoadingBehavior = true
 
     /**
      * Button states.
@@ -57,24 +50,25 @@ class AnimatedButton @JvmOverloads constructor(
     }
 
     /**
-     * Button animation transition duration.
+     * Button transition animation duration.
      */
-    private var animationDuration = defaultAnimationDuration
+    private var animationDuration = DEFAULT_TRANSITION_ANIMATION_DURATION
 
     /**
      * Button fade animation duration.
      */
-    private var fadeAnimationDuration = defaultFadeAnimationDuration
+    private var fadeAnimationDuration = DEFAULT_FADE_ANIMATION_DURATION
 
     /**
-     * Button state.
+     * Button current state.
      */
     private var currentState = ButtonState.NORMAL
+    val state: ButtonState get() = currentState
 
     // TODO: maybe implement factory pattern to inject this object instead of hilt? does hilt
     //  affect library user (project).
     /**
-     *
+     * Button animator responsible for handling animations.
      */
     private var buttonAnimator: ButtonAnimator
 
@@ -84,9 +78,9 @@ class AnimatedButton @JvmOverloads constructor(
     private var onClickListener: OnClickListener? = null
 
     /**
-     * Auto-loading behavior when clicked indicator (default true).
+     * Auto-loading when clicked (default true).
      */
-    private var autoLoading = defaultAutoLoadingBehavior
+    private var autoLoading = DEFAULT_AUTO_LOADING
 
 
     /**
@@ -97,6 +91,9 @@ class AnimatedButton @JvmOverloads constructor(
     private val successImageView: ImageView
     private val failureImageView: ImageView
 
+    /**
+     * Initialize the AnimatedButton.
+     */
     init {
         // Initialize button
         isClickable = true
@@ -110,10 +107,10 @@ class AnimatedButton @JvmOverloads constructor(
         )
 
         // Initialize and add child views
-        textView = createTextView(attrs)
-        progressBar = createProgressBar(attrs)
-        successImageView = createSuccessImageView(attrs)
-        failureImageView = createFailureImageView(attrs)
+        textView = createTextView(context, attrs)
+        progressBar = createProgressBar(context, attrs)
+        successImageView = createSuccessImageView(context, attrs)
+        failureImageView = createFailureImageView(context, attrs)
 
         addView(textView)
         addView(progressBar)
@@ -125,165 +122,169 @@ class AnimatedButton @JvmOverloads constructor(
 
         buttonAnimator = ButtonAnimator(animationDuration, fadeAnimationDuration)
         this.setOnClickListener(this)
-
-        // Set initial visibility based on the default state (NORMAL)
-        updateVisibility()
     }
 
+    /**
+     * Sets other attributes for the button based on the provided AttributeSet.
+     *
+     * @param attrs The AttributeSet containing custom attributes for the button.
+     */
     private fun setOtherAttributes(attrs: AttributeSet?) {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AnimatedButton)
         typedArray.apply {
             animationDuration =
-                getInteger(R.styleable.AnimatedButton_animationDuration, defaultAnimationDuration)
-            autoLoading =
-                getBoolean(R.styleable.AnimatedButton_autoLoading, defaultAutoLoadingBehavior)
+                getInteger(R.styleable.AnimatedButton_animationDuration, animationDuration)
+            fadeAnimationDuration = animationDuration / 2
+            autoLoading = getBoolean(R.styleable.AnimatedButton_autoLoading, autoLoading)
         }
 
         typedArray.recycle()
     }
 
 
-    private fun createTextView(attrs: AttributeSet?): TextView {
-        val textView = TextView(context).apply {
-            val params = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-            params.addRule(CENTER_IN_PARENT, TRUE)
-            layoutParams = params
-            isFocusable = false
-            isClickable = false
-
-            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AnimatedButton)
-
-            text = typedArray.getString(R.styleable.AnimatedButton_text) ?: defaultText
-            textSize =
-                typedArray.getRawDimension(R.styleable.AnimatedButton_textSize, defaultTextSize)
-            setTypeface(
-                null,
-                typedArray.getInt(R.styleable.AnimatedButton_textStyle, defaultTextStyle)
-            )
-            setTextColor(
-                typedArray.getColor(
-                    R.styleable.AnimatedButton_textColor,
-                    defaultTextColor
-                )
-            )
-
-            typedArray.recycle()
-        }
-        return textView
-    }
-
-    private fun createProgressBar(attrs: AttributeSet?): ProgressBar {
-        val progressBar = ProgressBar(context).apply {
-            val params = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-            params.addRule(CENTER_IN_PARENT, TRUE)
-            layoutParams = params
-            isFocusable = false
-            isClickable = false
-
-            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AnimatedButton)
-            val tintList = ColorStateList.valueOf(
-                typedArray.getColor(R.styleable.AnimatedButton_indicatorColor, defaultProgressColor)
-            )
-            indeterminateTintList = tintList
-
-            typedArray.recycle()
-        }
-        return progressBar
-    }
-
-    private fun createSuccessImageView(attrs: AttributeSet?): ImageView {
-        val imageView = ImageView(context).apply {
-            val params = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-            params.addRule(CENTER_IN_PARENT, TRUE)
-            layoutParams = params
-            isFocusable = false
-            isClickable = false
-
-            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AnimatedButton)
-            setImageResource(
-                typedArray.getResourceId(
-                    R.styleable.AnimatedButton_successIcon,
-                    defaultSuccessIconRes
-                )
-            )
-            val tintList = ColorStateList.valueOf(
-                typedArray.getColor(
-                    R.styleable.AnimatedButton_successIconTint,
-                    defaultProgressColor
-                )
-            )
-            imageTintList = tintList
-
-            typedArray.recycle()
-        }
-        return imageView
-    }
-
-
-    private fun createFailureImageView(attrs: AttributeSet?): ImageView {
-        val imageView = ImageView(context).apply {
-            val params = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-            params.addRule(CENTER_IN_PARENT, TRUE)
-            layoutParams = params
-            isFocusable = false
-            isClickable = false
-
-            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AnimatedButton)
-            setImageResource(
-                typedArray.getResourceId(
-                    R.styleable.AnimatedButton_failureIcon,
-                    defaultErrorIconRes
-                )
-            )
-            val tintList = ColorStateList.valueOf(
-                typedArray.getColor(
-                    R.styleable.AnimatedButton_failureIconTint,
-                    defaultProgressColor
-                )
-            )
-            imageTintList = tintList
-
-            typedArray.recycle()
-        }
-        return imageView
-    }
-
-    // Method to update visibility based on the current state
-    private fun updateVisibility() {
-        // Implement logic to set visibility for each view based on the currentState
-        textView.alpha = 1f
-        progressBar.alpha = 0f
-        successImageView.alpha = 0f
-        failureImageView.alpha = 0f
-    }
-
     /**
-     * Set the auto-loading behavior indicator.
+     * Sets the animation duration properties for the button.
      *
-     * @param autoLoad A boolean value to be set.
+     * @param duration The duration for button animations.
+     * @return The AnimatedButton instance.
      */
-    fun setAutoLoading(autoLoad: Boolean): AnimatedButton {
-        autoLoading = autoLoad
+    fun setAnimationDuration(duration: Int): AnimatedButton {
+        animationDuration = duration
+        fadeAnimationDuration = duration / 2
         return this
     }
 
     /**
-     * A customizable click listener interface. That's different that the default interface
-     * that provides the default stated behaviour.
+     * Sets the text of the button.
+     *
+     * @param newText The new text for the button.
+     * @return The AnimatedButton instance.
+     */
+    fun setText(newText: String): AnimatedButton {
+        textView.text = newText
+        return this
+    }
+
+    /**
+     * Sets the indeterminate status of the progress bar.
+     *
+     * @param indeterminate Whether the progress bar should be indeterminate or not.
+     * @return The AnimatedButton instance.
+     */
+    fun setIndeterminate(indeterminate: Boolean): AnimatedButton {
+        progressBar.isIndeterminate = indeterminate
+        return this
+    }
+
+    /**
+     * Sets the progress value of the progress bar.
+     *
+     * @param progress The progress value.
+     * @return The AnimatedButton instance.
+     */
+    fun setProgress(progress: Int): AnimatedButton {
+        progressBar.progress = progress
+        return this
+    }
+
+    /**
+     * Sets the progress value of the progress bar with or without animation.
+     *
+     * @param progress The progress value.
+     * @param animate Whether to animate the progress change.
+     * @return The AnimatedButton instance.
+     */
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun setProgress(progress: Int, animate: Boolean): AnimatedButton {
+        progressBar.setProgress(progress, animate)
+        return this
+    }
+
+    /**
+     * Sets the progress indicator color of the progress bar.
+     *
+     * @param colorRes The color resource for the progress indicator.
+     * @return The AnimatedButton instance.
+     */
+    fun setProgressIndicatorColor(colorRes: Int): AnimatedButton {
+        val colorStateList = ColorStateList.valueOf(colorRes)
+        progressBar.progressTintList = colorStateList
+        return this
+    }
+
+    /**
+     * Sets the image resource for the success state.
+     *
+     * @param imageRes The resource ID of the success image.
+     * @return The AnimatedButton instance.
+     */
+    fun setSuccessImageResource(imageRes: Int): AnimatedButton {
+        successImageView.setImageResource(imageRes)
+        return this
+    }
+
+    /**
+     * Sets the tint color for the success image.
+     *
+     * @param colorRes The color resource for tinting the success image.
+     * @return The AnimatedButton instance.
+     */
+    fun setSuccessImageTint(colorRes: Int): AnimatedButton {
+        val colorStateList = ColorStateList.valueOf(colorRes)
+        successImageView.imageTintList = colorStateList
+        return this
+    }
+
+    /**
+     * Sets the image resource for the failure state.
+     *
+     * @param imageRes The resource ID of the failure image.
+     * @return The AnimatedButton instance.
+     */
+    fun setFailureImageResource(imageRes: Int): AnimatedButton {
+        failureImageView.setImageResource(imageRes)
+        return this
+    }
+
+    /**
+     * Sets the tint color for the failure image.
+     *
+     * @param colorRes The color resource for tinting the failure image.
+     * @return The AnimatedButton instance.
+     */
+    fun setFailureImageTint(colorRes: Int): AnimatedButton {
+        val colorStateList = ColorStateList.valueOf(colorRes)
+        failureImageView.imageTintList = colorStateList
+        return this
+    }
+
+
+    /**
+     * A customizable click listener interface. Overrides the click behavior to apply a unique
+     * behavior for the AnimatedButton
      */
     fun interface OnClickListener {
+        /**
+         * Called when the button is clicked.
+         *
+         * @param view The view that was clicked.
+         */
         fun onClick(view: View)
     }
 
     /**
-     * Set a click listener for the button.
+     * Sets the click listener for the button.
+     *
+     * @param listener The custom click listener to be set.
      */
     fun setOnClickListener(listener: OnClickListener) {
         onClickListener = listener
     }
 
     /**
-     * The default onClick method.
+     * Handles the click event for the button.
+     *
+     * @param view The view that was clicked.
      */
     override fun onClick(view: View) {
         if (!autoLoading) {
@@ -296,35 +297,26 @@ class AnimatedButton @JvmOverloads constructor(
                 animateNormalToLoadingState()
             }
 
-            ButtonState.LOADING -> {
-                // un-reachable case by default since the button is disabled while loading
-                animateLoadingToNormalState()
-            }
-
-            ButtonState.DONE -> {
-                // un-reachable case by default since the button is disabled while loading
-                // TODO
-            }
-
-            ButtonState.ERROR -> {
-                // un-reachable case by default since the button is disabled while loading
-                // TODO
-            }
+            // un-reachable cases by default as the button gets disabled
+            ButtonState.LOADING -> {}
+            ButtonState.DONE -> {}
+            ButtonState.ERROR -> {}
         }
 
         onClickListener?.onClick(view)
     }
 
     /**
-     * Checks whether or not the button is in an animation.
+     * Checks whether or not the button is currently in an animation.
      *
-     * @return A boolean, true if the button is animating and false otherwise.
+     * @return `true` if the button is animating, `false` otherwise.
      */
     fun isAnimating() = buttonAnimator.isAnimating()
 
 
+    // TODO: revisit this function for optimization
     /**
-     * Reset animation to get button back to normal state.
+     * Resets the button state, stopping any ongoing animation and returning the button to its normal state.
      */
     private fun resetButtonState() {
         val savedDuration = animationDuration
@@ -341,80 +333,80 @@ class AnimatedButton @JvmOverloads constructor(
     }
 
     /**
-     * Start animation to get back to normal state.
+     * Initiates the animation to transition the button from the loading state to the normal state.
      */
     private fun animateLoadingToNormalState() {
         buttonAnimator.viewExpand(this)
-        buttonAnimator.viewFadeIn(progressBar) {
-            buttonAnimator.viewFadeOut(textView)
-        }
+        buttonAnimator.viewFadeIn(progressBar, true)
+        buttonAnimator.viewFadeOut(textView)
+
         this.isClickable = true
         currentState = ButtonState.NORMAL
     }
 
     /**
-     * Start animation to convert button to loading button
+     * Initiates the animation to transition the button from the normal state to the loading state.
      */
     private fun animateNormalToLoadingState() {
         buttonAnimator.viewShrink(this)
-        buttonAnimator.viewFadeIn(textView, true) {
-            buttonAnimator.viewFadeOut(progressBar, true)
-        }
+        buttonAnimator.viewFadeIn(textView, true)
+        buttonAnimator.viewFadeOut(progressBar)
+
         this.isClickable = false
         currentState = ButtonState.LOADING
     }
 
     /**
-     * Start animation to get back to normal button from done button.
+     * Initiates the animation to transition the button from the done state to the normal state.
      */
     private fun animateDoneToNormalState() {
         buttonAnimator.viewExpand(this)
-        buttonAnimator.viewFadeIn(successImageView, true) {
-            buttonAnimator.viewFadeOut(textView, true)
-        }
+        buttonAnimator.viewFadeIn(successImageView, true)
+        buttonAnimator.viewFadeOut(textView)
+
         this.isClickable = true
         currentState = ButtonState.NORMAL
     }
 
     /**
-     * Start animation to convert button to done view.
+     * Initiates the animation to transition the button from the loading state to the done state.
      */
     private fun animateLoadingToDoneState() {
-        buttonAnimator.viewFadeIn(progressBar) {
-            buttonAnimator.viewFadeOut(successImageView)
-        }
+        buttonAnimator.viewFadeIn(progressBar)
+        buttonAnimator.viewFadeOut(successImageView)
+
         this.isClickable = false
         currentState = ButtonState.DONE
     }
 
     /**
-     * Start animation to get back to normal button from error view
+     * Initiates the animation to transition the button from the error state to the normal state.
      */
     private fun animateErrorToNormalState() {
         buttonAnimator.viewExpand(this)
-        buttonAnimator.viewFadeIn(failureImageView) {
-            buttonAnimator.viewFadeOut(textView)
-        }
+        buttonAnimator.viewFadeIn(failureImageView, true)
+        buttonAnimator.viewFadeOut(textView)
+
         this.isClickable = true
         currentState = ButtonState.NORMAL
     }
 
     /**
-     * Start animation to convert button to error view
+     * Initiates the animation to transition the button from the loading state to the error state.
      */
     private fun animateLoadingToErrorState() {
-        buttonAnimator.viewFadeIn(progressBar) {
-            buttonAnimator.viewFadeOut(failureImageView)
-        }
+        buttonAnimator.viewFadeIn(progressBar)
+        buttonAnimator.viewFadeOut(failureImageView)
+
         this.isClickable = false
         currentState = ButtonState.ERROR
     }
 
 
     /**
-     * The main method for animations.
+     * Displays a specific animation for the button based on the provided [ButtonAnimation] type.
      *
-     * @param animation A specific animation type.
+     * @param animation The type of animation to display.
      */
     fun showAnimation(animation: ButtonAnimation) {
         when (animation) {

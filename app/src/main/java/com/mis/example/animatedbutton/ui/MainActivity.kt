@@ -12,6 +12,7 @@ import com.mis.animatedbutton.ButtonAnimation.NormalToLoading
 import com.mis.animatedbutton.ButtonAnimation.DoneToNormal
 import com.mis.animatedbutton.ButtonAnimation.ErrorToNormal
 import com.mis.animatedbutton.ButtonAnimation.LoadingToError
+import com.mis.animatedbutton.ButtonAnimation.LoadingToNormal
 import com.mis.example.animatedbutton.R
 import kotlin.time.Duration
 import kotlin.time.measureTime
@@ -59,22 +60,49 @@ class MainActivity : AppCompatActivity() {
         customBehaviorLoadingBtn.setOnClickListener {
             it as AnimatedButton
 
-            Snackbar.make(it, "Button Clicked", Snackbar.LENGTH_SHORT).show()
-
             // show loading 2 seconds after click
             Handler(Looper.getMainLooper()).postDelayed({
+                Snackbar.make(it, "Done interrupt Loading", Snackbar.LENGTH_SHORT).show()
                 it.showAnimation(NormalToLoading)
-            }, 0)
+            }, 1000)
 
             // show done after 2 seconds of loading
             Handler(Looper.getMainLooper()).postDelayed({
                 it.showAnimation(LoadingToDone)
-            }, 100)
+            }, 1500)
 
             // return to normal state after 2 seconds of done
             Handler(Looper.getMainLooper()).postDelayed({
                 it.showAnimation(DoneToNormal)
-            }, 200)
+            }, 3000)
+
+
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                Snackbar.make(it, "Error interrupt Loading", Snackbar.LENGTH_SHORT).show()
+//                it.showAnimation(NormalToLoading)
+//            }, 1000)
+//
+//            // show done after 2 seconds of loading
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                it.showAnimation(LoadingToError)
+//            }, 1250)
+//
+//            // return to normal state after 2 seconds of done
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                it.showAnimation(ErrorToNormal)
+//            }, 3000)
+
+
+//            // en error happens ere
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                Snackbar.make(it, "Normal interrupt Loading", Snackbar.LENGTH_SHORT).show()
+//                it.showAnimation(NormalToLoading)
+//            }, 1000)
+//
+//            // show done after 2 seconds of loading
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                it.showAnimation(LoadingToNormal)
+//            }, 1250)
         }
     }
 }

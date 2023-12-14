@@ -46,8 +46,8 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
                     override fun onAnimationEnd(animation: Animator) {
                         super.onAnimationEnd(animation)
                         isAnimating = false
-                        listener?.onAnimationEnd(view)
-//                        processAnimationQueue()
+//                        listener?.onAnimationEnd(view)
+                        processAnimationQueue()
                         Log.d("ttt", "fade in end ${System.nanoTime()}")
                     }
                 })
@@ -55,7 +55,7 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
         }
 
         if (exclude) fadeInAnimation()
-//        else if (isAnimating) animationQueue.add(fadeInAnimation)
+        else if (isAnimating) animationQueue.add(fadeInAnimation)
         else fadeInAnimation()
     }
 
@@ -75,8 +75,8 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
                     override fun onAnimationEnd(animation: Animator) {
                         super.onAnimationEnd(animation)
                         isAnimating = false
-                        listener?.onAnimationEnd(view)
-//                        processAnimationQueue()
+//                        listener?.onAnimationEnd(view)
+                        processAnimationQueue()
                         Log.d("ttt", "fade out end ${System.nanoTime()}")
                     }
                 })
@@ -84,7 +84,7 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
         }
 
         if (exclude) fadeOutAnimation()
-//        else if (isAnimating) animationQueue.add(fadeOutAnimation)
+        else if (isAnimating) animationQueue.add(fadeOutAnimation)
         else fadeOutAnimation()
     }
 
@@ -106,17 +106,16 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
             }
             anim.doOnEnd {
                 isAnimating = false
-                listener?.onAnimationEnd(view)
-//                processAnimationQueue()
+//                listener?.onAnimationEnd(view)
+                processAnimationQueue()
                 Log.d("ttt", "shrink end ${System.nanoTime()}")
             }
             anim.duration = animationDuration.toLong()
             anim.start()
         }
 
-//        if (isAnimating) animationQueue.add(shrinkAnimation)
-//        else shrinkAnimation()
-        shrinkAnimation()
+        if (isAnimating) animationQueue.add(shrinkAnimation)
+        else shrinkAnimation()
     }
 
     /**
@@ -136,16 +135,15 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
             }
             anim.doOnEnd {
                 isAnimating = false
-                listener?.onAnimationEnd(view)
-//                processAnimationQueue()
+//                listener?.onAnimationEnd(view)
+                processAnimationQueue()
                 Log.d("ttt", "expand end ${System.nanoTime()}")
             }
             anim.duration = animationDuration.toLong()
             anim.start()
         }
 
-//        if (isAnimating) animationQueue.add(expandAnimation)
-//        else expandAnimation()
-        expandAnimation()
+        if (isAnimating) animationQueue.add(expandAnimation)
+        else expandAnimation()
     }
 }
