@@ -3,19 +3,9 @@ package com.mis.example.animatedbutton.ui
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.snackbar.Snackbar
 import com.mis.animatedbutton.AnimatedButton
-import com.mis.animatedbutton.ButtonAnimation.LoadingToDone
-import com.mis.animatedbutton.ButtonAnimation.NormalToLoading
-import com.mis.animatedbutton.ButtonAnimation.DoneToNormal
-import com.mis.animatedbutton.ButtonAnimation.ErrorToNormal
-import com.mis.animatedbutton.ButtonAnimation.LoadingToError
-import com.mis.animatedbutton.ButtonAnimation.LoadingToNormal
 import com.mis.example.animatedbutton.R
-import kotlin.time.Duration
-import kotlin.time.measureTime
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,27 +22,27 @@ class MainActivity : AppCompatActivity() {
 
             // show done after 2 seconds of loading
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(LoadingToDone)
+                it.showSuccess()
             }, 2000)
 
             // return to normal state
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(DoneToNormal)
+                it.showNormal()
             }, 4000)
 
             // start loading again
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(NormalToLoading)
+                it.showLoading()
             }, 6000)
 
             // show error this time
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(LoadingToError)
+                it.showFailure()
             }, 8000)
 
             // finally, return to normal state
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(ErrorToNormal)
+                it.showNormal()
             }, 10000)
         }
 
@@ -60,49 +50,20 @@ class MainActivity : AppCompatActivity() {
         customBehaviorLoadingBtn.setOnClickListener {
             it as AnimatedButton
 
-            // show loading 2 seconds after click
+            // show loading after click
             Handler(Looper.getMainLooper()).postDelayed({
-                Snackbar.make(it, "Done interrupt Loading", Snackbar.LENGTH_SHORT).show()
-                it.showAnimation(NormalToLoading)
+                it.showLoading()
             }, 1000)
 
-            // show done after 2 seconds of loading
+            // show done after loading
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(LoadingToDone)
-            }, 1500)
+                it.showFailure()
+            }, 2500)
 
-            // return to normal state after 2 seconds of done
+            // return to normal state after done
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(DoneToNormal)
-            }, 3000)
-
-
-//            Handler(Looper.getMainLooper()).postDelayed({
-//                Snackbar.make(it, "Error interrupt Loading", Snackbar.LENGTH_SHORT).show()
-//                it.showAnimation(NormalToLoading)
-//            }, 1000)
-//
-//            // show done after 2 seconds of loading
-//            Handler(Looper.getMainLooper()).postDelayed({
-//                it.showAnimation(LoadingToError)
-//            }, 1250)
-//
-//            // return to normal state after 2 seconds of done
-//            Handler(Looper.getMainLooper()).postDelayed({
-//                it.showAnimation(ErrorToNormal)
-//            }, 3000)
-
-
-//            // en error happens ere
-//            Handler(Looper.getMainLooper()).postDelayed({
-//                Snackbar.make(it, "Normal interrupt Loading", Snackbar.LENGTH_SHORT).show()
-//                it.showAnimation(NormalToLoading)
-//            }, 1000)
-//
-//            // show done after 2 seconds of loading
-//            Handler(Looper.getMainLooper()).postDelayed({
-//                it.showAnimation(LoadingToNormal)
-//            }, 1250)
+                it.showNormal()
+            }, 3500)
         }
     }
 }

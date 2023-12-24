@@ -12,13 +12,12 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.view.setPadding
-import com.mis.animatedbutton.ButtonAnimation.DoneToNormal
-import com.mis.animatedbutton.ButtonAnimation.ErrorToNormal
-import com.mis.animatedbutton.ButtonAnimation.LoadingToDone
-import com.mis.animatedbutton.ButtonAnimation.LoadingToError
+import com.mis.animatedbutton.ButtonAnimation.SuccessToNormal
+import com.mis.animatedbutton.ButtonAnimation.FailureToNormal
+import com.mis.animatedbutton.ButtonAnimation.LoadingToSuccess
+import com.mis.animatedbutton.ButtonAnimation.LoadingToFailure
 import com.mis.animatedbutton.ButtonAnimation.LoadingToNormal
 import com.mis.animatedbutton.ButtonAnimation.NormalToLoading
-import com.mis.animatedbutton.ButtonAnimation.ResetToNormal
 import com.mis.animatedbutton.ViewProvider.createFailureImageView
 import com.mis.animatedbutton.ViewProvider.createProgressBar
 import com.mis.animatedbutton.ViewProvider.createSuccessImageView
@@ -45,8 +44,8 @@ class AnimatedButton @JvmOverloads constructor(
     enum class ButtonState {
         NORMAL,
         LOADING,
-        DONE,
-        ERROR
+        SUCCESS,
+        FAILURE
     }
 
     /**
@@ -293,14 +292,12 @@ class AnimatedButton @JvmOverloads constructor(
         }
 
         when (currentState) {
-            ButtonState.NORMAL -> {
-                animateNormalToLoadingState()
-            }
+            ButtonState.NORMAL -> showLoading()
 
             // un-reachable cases by default as the button gets disabled
             ButtonState.LOADING -> {}
-            ButtonState.DONE -> {}
-            ButtonState.ERROR -> {}
+            ButtonState.SUCCESS -> {}
+            ButtonState.FAILURE -> {}
         }
 
         onClickListener?.onClick(view)
@@ -313,24 +310,6 @@ class AnimatedButton @JvmOverloads constructor(
      */
     fun isAnimating() = buttonAnimator.isAnimating()
 
-
-    // TODO: revisit this function for optimization
-    /**
-     * Resets the button state, stopping any ongoing animation and returning the button to its normal state.
-     */
-    private fun resetButtonState() {
-        val savedDuration = animationDuration
-        buttonAnimator.animationDuration = 0
-
-//        buttonAnimator.viewExpand(this)
-        buttonAnimator.viewFadeIn(successImageView)
-        buttonAnimator.viewFadeIn(failureImageView)
-        buttonAnimator.viewFadeIn(progressBar)
-
-        buttonAnimator.animationDuration = savedDuration
-
-        currentState = ButtonState.NORMAL
-    }
 
     /**
      * Initiates the animation to transition the button from the loading state to the normal state.
@@ -359,7 +338,7 @@ class AnimatedButton @JvmOverloads constructor(
     /**
      * Initiates the animation to transition the button from the done state to the normal state.
      */
-    private fun animateDoneToNormalState() {
+    private fun animateSuccessToNormalState() {
         buttonAnimator.viewExpand(this)
         buttonAnimator.viewFadeIn(successImageView, true)
         buttonAnimator.viewFadeOut(textView)
@@ -371,18 +350,18 @@ class AnimatedButton @JvmOverloads constructor(
     /**
      * Initiates the animation to transition the button from the loading state to the done state.
      */
-    private fun animateLoadingToDoneState() {
+    private fun animateLoadingToSuccessState() {
         buttonAnimator.viewFadeIn(progressBar)
         buttonAnimator.viewFadeOut(successImageView)
 
         this.isClickable = false
-        currentState = ButtonState.DONE
+        currentState = ButtonState.SUCCESS
     }
 
     /**
      * Initiates the animation to transition the button from the error state to the normal state.
      */
-    private fun animateErrorToNormalState() {
+    private fun animateFailureToNormalState() {
         buttonAnimator.viewExpand(this)
         buttonAnimator.viewFadeIn(failureImageView, true)
         buttonAnimator.viewFadeOut(textView)
@@ -394,12 +373,12 @@ class AnimatedButton @JvmOverloads constructor(
     /**
      * Initiates the animation to transition the button from the loading state to the error state.
      */
-    private fun animateLoadingToErrorState() {
+    private fun animateLoadingToFailureState() {
         buttonAnimator.viewFadeIn(progressBar)
         buttonAnimator.viewFadeOut(failureImageView)
 
         this.isClickable = false
-        currentState = ButtonState.ERROR
+        currentState = ButtonState.FAILURE
     }
 
 
@@ -408,16 +387,36 @@ class AnimatedButton @JvmOverloads constructor(
      *
      * @param animation The type of animation to display.
      */
-    fun showAnimation(animation: ButtonAnimation) {
+    private fun startAnimation(animation: ButtonAnimation) {
         when (animation) {
-            ResetToNormal -> resetButtonState()
             NormalToLoading -> animateNormalToLoadingState()
             LoadingToNormal -> animateLoadingToNormalState()
-            LoadingToDone -> animateLoadingToDoneState()
-            LoadingToError -> animateLoadingToErrorState()
-            DoneToNormal -> animateDoneToNormalState()
-            ErrorToNormal -> animateErrorToNormalState()
+            LoadingToSuccess -> animateLoadingToSuccessState()
+            LoadingToFailure -> animateLoadingToFailureState()
+            SuccessToNormal -> animateSuccessToNormalState()
+            FailureToNormal -> animateFailureToNormalState()
         }
     }
 
+
+    fun showLoading() {
+        if (currentState == ButtonState.NORMAL) startAnimation(NormalToLoading)
+    }
+
+    fun showSuccess() {
+        if (currentState == ButtonState.LOADING) startAnimation(LoadingToSuccess)
+    }
+
+    fun showFailure() {
+        if (currentState == ButtonState.LOADING) startAnimation(LoadingToFailure)
+    }
+
+    fun showNormal() {
+        when (currentState) {
+            ButtonState.NORMAL -> {}
+            ButtonState.LOADING -> startAnimation(LoadingToNormal)
+            ButtonState.SUCCESS -> startAnimation(SuccessToNormal)
+            ButtonState.FAILURE -> startAnimation(FailureToNormal)
+        }
+    }
 }
