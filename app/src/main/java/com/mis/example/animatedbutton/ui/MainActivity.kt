@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
             // return to normal state after done
             Handler(Looper.getMainLooper()).postDelayed({
                 it.showNormal()
-            }, 3500)
+            }, 2501)
         }
     }
 }

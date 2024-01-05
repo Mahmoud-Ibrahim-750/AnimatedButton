@@ -315,7 +315,7 @@ class AnimatedButton @JvmOverloads constructor(
      * Initiates the animation to transition the button from the loading state to the normal state.
      */
     private fun animateLoadingToNormalState() {
-        buttonAnimator.viewExpand(this)
+        buttonAnimator.buttonExpand(this)
         buttonAnimator.viewFadeIn(progressBar, true)
         buttonAnimator.viewFadeOut(textView)
 
@@ -327,7 +327,7 @@ class AnimatedButton @JvmOverloads constructor(
      * Initiates the animation to transition the button from the normal state to the loading state.
      */
     private fun animateNormalToLoadingState() {
-        buttonAnimator.viewShrink(this)
+        buttonAnimator.buttonShrink(this)
         buttonAnimator.viewFadeIn(textView, true)
         buttonAnimator.viewFadeOut(progressBar)
 
@@ -339,7 +339,7 @@ class AnimatedButton @JvmOverloads constructor(
      * Initiates the animation to transition the button from the done state to the normal state.
      */
     private fun animateSuccessToNormalState() {
-        buttonAnimator.viewExpand(this)
+        buttonAnimator.buttonExpand(this)
         buttonAnimator.viewFadeIn(successImageView, true)
         buttonAnimator.viewFadeOut(textView)
 
@@ -362,7 +362,7 @@ class AnimatedButton @JvmOverloads constructor(
      * Initiates the animation to transition the button from the error state to the normal state.
      */
     private fun animateFailureToNormalState() {
-        buttonAnimator.viewExpand(this)
+        buttonAnimator.buttonExpand(this)
         buttonAnimator.viewFadeIn(failureImageView, true)
         buttonAnimator.viewFadeOut(textView)
 

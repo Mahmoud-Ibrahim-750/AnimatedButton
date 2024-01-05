@@ -7,7 +7,10 @@ import android.view.View
 import androidx.core.animation.doOnEnd
 
 
-class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDuration: Int) {
+class ButtonAnimator(
+    private var buttonAnimationDuration: Int,
+    private val viewsAnimationDuration: Int
+) {
 
     private val animationQueue: MutableList<() -> Unit> = mutableListOf()
     private var isAnimating = false
@@ -37,7 +40,7 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
             isAnimating = true
             view.animate()
                 .alpha(fadeInAlpha)
-                .setDuration(fadeAnimationDuration.toLong())
+                .setDuration(viewsAnimationDuration.toLong())
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         super.onAnimationEnd(animation)
@@ -65,7 +68,7 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
             isAnimating = true
             view.animate()
                 .alpha(fadeOutAlpha)
-                .setDuration(fadeAnimationDuration.toLong())
+                .setDuration(viewsAnimationDuration.toLong())
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         super.onAnimationEnd(animation)
@@ -86,7 +89,7 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
      *
      * @param view The view to be faded in
      */
-    fun viewShrink(view: View) {
+    fun buttonShrink(view: View) {
         val shrinkAnimation: () -> Unit = {
             isAnimating = true
             widthBeforeShrink = view.measuredWidth
@@ -101,7 +104,7 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
                 isAnimating = false
                 processAnimationQueue()
             }
-            anim.duration = animationDuration.toLong()
+            anim.duration = buttonAnimationDuration.toLong()
             anim.start()
         }
 
@@ -114,7 +117,7 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
      *
      * @param view The view to be expanded
      */
-    fun viewExpand(view: View) {
+    fun buttonExpand(view: View) {
         val expandAnimation: () -> Unit = {
             isAnimating = true
             val anim = ValueAnimator.ofInt(view.measuredWidth, widthBeforeShrink)
@@ -128,7 +131,7 @@ class ButtonAnimator(var animationDuration: Int, private val fadeAnimationDurati
                 isAnimating = false
                 processAnimationQueue()
             }
-            anim.duration = animationDuration.toLong()
+            anim.duration = buttonAnimationDuration.toLong()
             anim.start()
         }
 
