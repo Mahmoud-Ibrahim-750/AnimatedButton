@@ -1,5 +1,8 @@
 package com.mis.example.animatedbutton.ui
 
+import android.annotation.SuppressLint
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -13,28 +16,61 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val loginBtn = findViewById<AnimatedButton>(R.id.login_btn)
+        val autoLoadingBtn = findViewById<AnimatedButton>(R.id.auto_loading_btn)
+        val customBehaviorLoadingBtn = findViewById<AnimatedButton>(R.id.custom_loading_btn)
 
-        loginBtn.setOnClickListener {
+        // use the default button behaviour (auto loading when clicked)
+        autoLoadingBtn.setOnClickListener {
+            (it as AnimatedButton)
+
+            // show done after 2 seconds of loading
             Handler(Looper.getMainLooper()).postDelayed({
-                loginBtn.animateLoadingToDoneState()
+                it.showSuccess()
             }, 2000)
 
+            // return to normal state
             Handler(Looper.getMainLooper()).postDelayed({
-                loginBtn.animateDoneToNormalState()
+                it.showNormal()
             }, 4000)
 
+            // start loading again
             Handler(Looper.getMainLooper()).postDelayed({
-                loginBtn.animateNormalToLoadingState()
+                it.showLoading()
             }, 6000)
 
+            // show error this time
             Handler(Looper.getMainLooper()).postDelayed({
-                loginBtn.animateLoadingToErrorState()
+                it.showFailure()
             }, 8000)
 
+            // finally, return to normal state
             Handler(Looper.getMainLooper()).postDelayed({
-                loginBtn.animateErrorToNormalState()
+                it.showNormal()
             }, 10000)
+        }
+
+        // override the default button behavior (show loading when another action happens)
+        customBehaviorLoadingBtn.setOnClickListener {
+            it as AnimatedButton
+
+            // show loading after click
+            Handler(Looper.getMainLooper()).postDelayed({
+                it.showLoading()
+            }, 1000)
+
+            // show done after loading
+            Handler(Looper.getMainLooper()).postDelayed({
+                it.showFailure()
+            }, 1300)
+
+            // return to normal state after done
+            Handler(Looper.getMainLooper()).postDelayed({
+                it.showNormal()
+                @SuppressLint("SetTextI18n")
+                it.textView.text = "Try Again?"
+                it.progressBar.indeterminateTintList = ColorStateList.valueOf(Color.RED)
+                it.failureImageView.setImageResource(R.drawable.ic_launcher_foreground)
+            }, 3000)
         }
     }
 }

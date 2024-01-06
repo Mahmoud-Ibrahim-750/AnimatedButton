@@ -12,14 +12,14 @@ import android.widget.ProgressBar
 
 object Utils {
 
-    fun Resources.getColor(colorId: Int, context: Context): Int {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            this.getColor(colorId, context.theme)
-        } else {
-            @Suppress("DEPRECATION")
-            this.getColor(colorId)
-        }
-    }
+//    fun Resources.getColor(colorId: Int, context: Context): Int {
+//        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            this.getColor(colorId, context.theme)
+//        } else {
+//            @Suppress("DEPRECATION")
+//            this.getColor(colorId)
+//        }
+//    }
 
     // todo: what does src in mean?
     fun ProgressBar.setColorFilter(color: Int) {
