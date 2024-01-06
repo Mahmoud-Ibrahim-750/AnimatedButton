@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.mis.animatedbutton"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 21
@@ -41,7 +41,7 @@ afterEvaluate {
 
                 groupId = "com.mis"
                 artifactId = "animated-button"
-                version = "1.0.0"
+                version = "1.0.7"
             }
         }
     }
