@@ -1,8 +1,6 @@
 package com.mis.animatedbutton
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
@@ -10,14 +8,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.core.view.setPadding
-import com.mis.animatedbutton.ButtonAnimation.SuccessToNormal
-import com.mis.animatedbutton.ButtonAnimation.FailureToNormal
-import com.mis.animatedbutton.ButtonAnimation.LoadingToSuccess
-import com.mis.animatedbutton.ButtonAnimation.LoadingToFailure
-import com.mis.animatedbutton.ButtonAnimation.LoadingToNormal
-import com.mis.animatedbutton.ButtonAnimation.NormalToLoading
 import com.mis.animatedbutton.ViewProvider.createFailureImageView
 import com.mis.animatedbutton.ViewProvider.createProgressBar
 import com.mis.animatedbutton.ViewProvider.createSuccessImageView
@@ -64,8 +55,7 @@ class AnimatedButton @JvmOverloads constructor(
     private var currentState = ButtonState.NORMAL
     val state: ButtonState get() = currentState
 
-    // TODO: maybe implement factory pattern to inject this object instead of hilt? does hilt
-    //  affect library user (project).
+
     /**
      * Button animator responsible for handling animations.
      */
@@ -83,12 +73,19 @@ class AnimatedButton @JvmOverloads constructor(
 
 
     /**
-     * Button views.
+     * Button views with an immutable instance exposed for for accessing from the button instance..
      */
-    private val textView: TextView
-    private val progressBar: ProgressBar
-    private val successImageView: ImageView
-    private val failureImageView: ImageView
+    private val _textView: TextView
+    val textView get() = _textView
+
+    private val _progressBar: ProgressBar
+    val progressBar get() = _progressBar
+
+    private val _successImageView: ImageView
+    val successImageView get() = _successImageView
+
+    private val _failureImageView: ImageView
+    val failureImageView get() = _failureImageView
 
     /**
      * Initialize the AnimatedButton.
@@ -106,15 +103,15 @@ class AnimatedButton @JvmOverloads constructor(
         )
 
         // Initialize and add child views
-        textView = createTextView(context, attrs)
-        progressBar = createProgressBar(context, attrs)
-        successImageView = createSuccessImageView(context, attrs)
-        failureImageView = createFailureImageView(context, attrs)
+        _textView = createTextView(context, attrs)
+        _progressBar = createProgressBar(context, attrs)
+        _successImageView = createSuccessImageView(context, attrs)
+        _failureImageView = createFailureImageView(context, attrs)
 
-        addView(textView)
-        addView(progressBar)
-        addView(successImageView)
-        addView(failureImageView)
+        addView(_textView)
+        addView(_progressBar)
+        addView(_successImageView)
+        addView(_failureImageView)
 
         // set other attributes (e.g., animationDuration)
         setOtherAttributes(attrs)
@@ -154,106 +151,13 @@ class AnimatedButton @JvmOverloads constructor(
     }
 
     /**
-     * Sets the text of the button.
+     * Sets the animation duration properties for the button.
      *
-     * @param newText The new text for the button.
+     * @param autoLoading The value to be set.
      * @return The AnimatedButton instance.
      */
-    fun setText(newText: String): AnimatedButton {
-        textView.text = newText
-        return this
-    }
-
-    /**
-     * Sets the indeterminate status of the progress bar.
-     *
-     * @param indeterminate Whether the progress bar should be indeterminate or not.
-     * @return The AnimatedButton instance.
-     */
-    fun setIndeterminate(indeterminate: Boolean): AnimatedButton {
-        progressBar.isIndeterminate = indeterminate
-        return this
-    }
-
-    /**
-     * Sets the progress value of the progress bar.
-     *
-     * @param progress The progress value.
-     * @return The AnimatedButton instance.
-     */
-    fun setProgress(progress: Int): AnimatedButton {
-        progressBar.progress = progress
-        return this
-    }
-
-    /**
-     * Sets the progress value of the progress bar with or without animation.
-     *
-     * @param progress The progress value.
-     * @param animate Whether to animate the progress change.
-     * @return The AnimatedButton instance.
-     */
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun setProgress(progress: Int, animate: Boolean): AnimatedButton {
-        progressBar.setProgress(progress, animate)
-        return this
-    }
-
-    /**
-     * Sets the progress indicator color of the progress bar.
-     *
-     * @param colorRes The color resource for the progress indicator.
-     * @return The AnimatedButton instance.
-     */
-    fun setProgressIndicatorColor(colorRes: Int): AnimatedButton {
-        val colorStateList = ColorStateList.valueOf(colorRes)
-        progressBar.progressTintList = colorStateList
-        return this
-    }
-
-    /**
-     * Sets the image resource for the success state.
-     *
-     * @param imageRes The resource ID of the success image.
-     * @return The AnimatedButton instance.
-     */
-    fun setSuccessImageResource(imageRes: Int): AnimatedButton {
-        successImageView.setImageResource(imageRes)
-        return this
-    }
-
-    /**
-     * Sets the tint color for the success image.
-     *
-     * @param colorRes The color resource for tinting the success image.
-     * @return The AnimatedButton instance.
-     */
-    fun setSuccessImageTint(colorRes: Int): AnimatedButton {
-        val colorStateList = ColorStateList.valueOf(colorRes)
-        successImageView.imageTintList = colorStateList
-        return this
-    }
-
-    /**
-     * Sets the image resource for the failure state.
-     *
-     * @param imageRes The resource ID of the failure image.
-     * @return The AnimatedButton instance.
-     */
-    fun setFailureImageResource(imageRes: Int): AnimatedButton {
-        failureImageView.setImageResource(imageRes)
-        return this
-    }
-
-    /**
-     * Sets the tint color for the failure image.
-     *
-     * @param colorRes The color resource for tinting the failure image.
-     * @return The AnimatedButton instance.
-     */
-    fun setFailureImageTint(colorRes: Int): AnimatedButton {
-        val colorStateList = ColorStateList.valueOf(colorRes)
-        failureImageView.imageTintList = colorStateList
+    fun setAutoLoading(autoLoading: Boolean): AnimatedButton {
+        this.autoLoading = autoLoading
         return this
     }
 
@@ -276,8 +180,9 @@ class AnimatedButton @JvmOverloads constructor(
      *
      * @param listener The custom click listener to be set.
      */
-    fun setOnClickListener(listener: OnClickListener) {
+    fun setOnClickListener(listener: OnClickListener): AnimatedButton {
         onClickListener = listener
+        return this
     }
 
     /**
@@ -303,120 +208,160 @@ class AnimatedButton @JvmOverloads constructor(
         onClickListener?.onClick(view)
     }
 
-    /**
-     * Checks whether or not the button is currently in an animation.
-     *
-     * @return `true` if the button is animating, `false` otherwise.
-     */
-    fun isAnimating() = buttonAnimator.isAnimating()
 
+    private var _isAnimating = false
+    val isAnimating get() = _isAnimating
+
+    private var nextAnimation: (() -> Unit)? = null
 
     /**
      * Initiates the animation to transition the button from the loading state to the normal state.
      */
     private fun animateLoadingToNormalState() {
+        _isAnimating = true
         buttonAnimator.buttonExpand(this)
-        buttonAnimator.viewFadeIn(progressBar, true)
-        buttonAnimator.viewFadeOut(textView)
-
-        this.isClickable = true
-        currentState = ButtonState.NORMAL
+        buttonAnimator.viewFadeIn(_progressBar) {
+            buttonAnimator.viewFadeOut(_textView) {
+                _isAnimating = false
+                currentState = ButtonState.NORMAL
+                nextAnimation?.invoke()
+                this.isClickable = true
+            }
+        }
     }
 
     /**
      * Initiates the animation to transition the button from the normal state to the loading state.
      */
     private fun animateNormalToLoadingState() {
-        buttonAnimator.buttonShrink(this)
-        buttonAnimator.viewFadeIn(textView, true)
-        buttonAnimator.viewFadeOut(progressBar)
-
+        _isAnimating = true
         this.isClickable = false
         currentState = ButtonState.LOADING
+        buttonAnimator.buttonShrink(this)
+        buttonAnimator.viewFadeIn(_textView) {
+            buttonAnimator.viewFadeOut(_progressBar) {
+                _isAnimating = false
+                nextAnimation?.invoke()
+            }
+        }
     }
 
     /**
      * Initiates the animation to transition the button from the done state to the normal state.
      */
     private fun animateSuccessToNormalState() {
+        _isAnimating = true
         buttonAnimator.buttonExpand(this)
-        buttonAnimator.viewFadeIn(successImageView, true)
-        buttonAnimator.viewFadeOut(textView)
-
-        this.isClickable = true
-        currentState = ButtonState.NORMAL
+        buttonAnimator.viewFadeIn(_successImageView) {
+            buttonAnimator.viewFadeOut(_textView) {
+                _isAnimating = false
+                currentState = ButtonState.NORMAL
+                nextAnimation?.invoke()
+                this.isClickable = true
+            }
+        }
     }
 
     /**
      * Initiates the animation to transition the button from the loading state to the done state.
      */
     private fun animateLoadingToSuccessState() {
-        buttonAnimator.viewFadeIn(progressBar)
-        buttonAnimator.viewFadeOut(successImageView)
-
+        _isAnimating = true
         this.isClickable = false
-        currentState = ButtonState.SUCCESS
+        buttonAnimator.viewFadeIn(_progressBar)
+        buttonAnimator.viewFadeOut(_successImageView) {
+            _isAnimating = false
+            currentState = ButtonState.SUCCESS
+            nextAnimation?.invoke()
+        }
     }
 
     /**
      * Initiates the animation to transition the button from the error state to the normal state.
      */
     private fun animateFailureToNormalState() {
+        _isAnimating = true
         buttonAnimator.buttonExpand(this)
-        buttonAnimator.viewFadeIn(failureImageView, true)
-        buttonAnimator.viewFadeOut(textView)
-
-        this.isClickable = true
-        currentState = ButtonState.NORMAL
+        buttonAnimator.viewFadeIn(_failureImageView) {
+            buttonAnimator.viewFadeOut(_textView) {
+                _isAnimating = false
+                currentState = ButtonState.NORMAL
+                nextAnimation?.invoke()
+                this.isClickable = true
+            }
+        }
     }
 
     /**
      * Initiates the animation to transition the button from the loading state to the error state.
      */
     private fun animateLoadingToFailureState() {
-        buttonAnimator.viewFadeIn(progressBar)
-        buttonAnimator.viewFadeOut(failureImageView)
-
+        _isAnimating = true
         this.isClickable = false
-        currentState = ButtonState.FAILURE
-    }
-
-
-    /**
-     * Displays a specific animation for the button based on the provided [ButtonAnimation] type.
-     *
-     * @param animation The type of animation to display.
-     */
-    private fun startAnimation(animation: ButtonAnimation) {
-        when (animation) {
-            NormalToLoading -> animateNormalToLoadingState()
-            LoadingToNormal -> animateLoadingToNormalState()
-            LoadingToSuccess -> animateLoadingToSuccessState()
-            LoadingToFailure -> animateLoadingToFailureState()
-            SuccessToNormal -> animateSuccessToNormalState()
-            FailureToNormal -> animateFailureToNormalState()
+        buttonAnimator.viewFadeIn(_progressBar)
+        buttonAnimator.viewFadeOut(_failureImageView) {
+            _isAnimating = false
+            currentState = ButtonState.FAILURE
+            nextAnimation?.invoke()
         }
     }
 
-
     fun showLoading() {
-        if (currentState == ButtonState.NORMAL) startAnimation(NormalToLoading)
+        if (currentState != ButtonState.NORMAL) return
+
+        if (isAnimating) nextAnimation = {
+            animateNormalToLoadingState()
+            nextAnimation = null
+        }
+        else animateNormalToLoadingState()
     }
 
     fun showSuccess() {
-        if (currentState == ButtonState.LOADING) startAnimation(LoadingToSuccess)
+        if (currentState != ButtonState.LOADING) return
+
+        if (isAnimating) nextAnimation = {
+            animateLoadingToSuccessState()
+            nextAnimation = null
+        }
+        else animateLoadingToSuccessState()
     }
 
     fun showFailure() {
-        if (currentState == ButtonState.LOADING) startAnimation(LoadingToFailure)
+        if (currentState != ButtonState.LOADING) return
+
+        if (isAnimating) nextAnimation = {
+            animateLoadingToFailureState()
+            nextAnimation = null
+        }
+        else animateLoadingToFailureState()
     }
 
     fun showNormal() {
         when (currentState) {
             ButtonState.NORMAL -> {}
-            ButtonState.LOADING -> startAnimation(LoadingToNormal)
-            ButtonState.SUCCESS -> startAnimation(SuccessToNormal)
-            ButtonState.FAILURE -> startAnimation(FailureToNormal)
+            ButtonState.LOADING -> {
+                if (isAnimating) nextAnimation = {
+                    animateLoadingToNormalState()
+                    nextAnimation = null
+                }
+                else animateLoadingToNormalState()
+            }
+
+            ButtonState.SUCCESS -> {
+                if (isAnimating) nextAnimation = {
+                    animateSuccessToNormalState()
+                    nextAnimation = null
+                }
+                else animateSuccessToNormalState()
+            }
+
+            ButtonState.FAILURE -> {
+                if (isAnimating) nextAnimation = {
+                    animateFailureToNormalState()
+                    nextAnimation = null
+                }
+                else animateFailureToNormalState()
+            }
         }
     }
 }

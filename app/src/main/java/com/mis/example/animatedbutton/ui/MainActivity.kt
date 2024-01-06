@@ -1,5 +1,8 @@
 package com.mis.example.animatedbutton.ui
 
+import android.annotation.SuppressLint
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -58,12 +61,16 @@ class MainActivity : AppCompatActivity() {
             // show done after loading
             Handler(Looper.getMainLooper()).postDelayed({
                 it.showFailure()
-            }, 2500)
+            }, 1300)
 
             // return to normal state after done
             Handler(Looper.getMainLooper()).postDelayed({
                 it.showNormal()
-            }, 2501)
+                @SuppressLint("SetTextI18n")
+                it.textView.text = "Try Again?"
+                it.progressBar.indeterminateTintList = ColorStateList.valueOf(Color.RED)
+                it.failureImageView.setImageResource(R.drawable.ic_launcher_foreground)
+            }, 3000)
         }
     }
 }

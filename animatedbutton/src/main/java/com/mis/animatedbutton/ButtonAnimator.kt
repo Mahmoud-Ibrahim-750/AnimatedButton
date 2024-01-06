@@ -12,76 +12,53 @@ class ButtonAnimator(
     private val viewsAnimationDuration: Int
 ) {
 
-    private val animationQueue: MutableList<() -> Unit> = mutableListOf()
-    private var isAnimating = false
+    private var _isRunning = false
 
     private var widthBeforeShrink = -100
     private val fadeInAlpha = 0f
     private val fadeOutAlpha = 1f
 
-    fun isAnimating(): Boolean = isAnimating
-
-    private fun processAnimationQueue() {
-        if (animationQueue.isNotEmpty() && !isAnimating) {
-            val nextAnimation = animationQueue.removeAt(0)
-            nextAnimation()
-        }
-    }
 
     /**
      * Fade in a view. There is a listener to indicate the end of animation.
      *
      * @param view The view to be faded in
-     * @param exclude A flag indicating whether or not this animation should wait for the previous
-     * one to complete first. True means it should not wait, false means it should wait.
+     * @param laterAction What to do after this animation ends
      */
-    fun viewFadeIn(view: View, exclude: Boolean = false) {
-        val fadeInAnimation: () -> Unit = {
-            isAnimating = true
-            view.animate()
-                .alpha(fadeInAlpha)
-                .setDuration(viewsAnimationDuration.toLong())
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        super.onAnimationEnd(animation)
-                        isAnimating = false
-                        processAnimationQueue()
-                    }
-                })
-                .start()
-        }
-
-        if (exclude) fadeInAnimation()
-        else if (isAnimating) animationQueue.add(fadeInAnimation)
-        else fadeInAnimation()
+    fun viewFadeIn(view: View, laterAction: (() -> Unit)? = null) {
+        _isRunning = true
+        view.animate()
+            .alpha(fadeInAlpha)
+            .setDuration(viewsAnimationDuration.toLong())
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    super.onAnimationEnd(animation)
+                    _isRunning = false
+                    laterAction?.invoke()
+                }
+            })
+            .start()
     }
 
     /**
      * Fade out a view.
      *
      * @param view The view to be faded out
-     * @param exclude A flag indicating whether or not this animation should wait for the previous
-     * one to complete first. True means it should not wait, false means it should wait.
+     * @param laterAction What to do after this animation ends
      */
-    fun viewFadeOut(view: View, exclude: Boolean = false) {
-        val fadeOutAnimation: () -> Unit = {
-            isAnimating = true
-            view.animate()
-                .alpha(fadeOutAlpha)
-                .setDuration(viewsAnimationDuration.toLong())
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        super.onAnimationEnd(animation)
-                        isAnimating = false
-                        processAnimationQueue()
-                    }
-                })
-                .start()
-        }
-
-        if (exclude) fadeOutAnimation()
-        else if (isAnimating) animationQueue.add(fadeOutAnimation)
-        else fadeOutAnimation()
+    fun viewFadeOut(view: View, laterAction: (() -> Unit)? = null) {
+        _isRunning = true
+        view.animate()
+            .alpha(fadeOutAlpha)
+            .setDuration(viewsAnimationDuration.toLong())
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    super.onAnimationEnd(animation)
+                    _isRunning = false
+                    laterAction?.invoke()
+                }
+            })
+            .start()
     }
 
     /**
@@ -89,27 +66,22 @@ class ButtonAnimator(
      *
      * @param view The view to be faded in
      */
-    fun buttonShrink(view: View) {
-        val shrinkAnimation: () -> Unit = {
-            isAnimating = true
-            widthBeforeShrink = view.measuredWidth
-            val anim = ValueAnimator.ofInt(view.measuredWidth, view.measuredHeight)
-            anim.addUpdateListener { valueAnimator ->
-                val value = valueAnimator.animatedValue as Int
-                val layoutParams = view.layoutParams
-                layoutParams.width = value
-                view.requestLayout()
-            }
-            anim.doOnEnd {
-                isAnimating = false
-                processAnimationQueue()
-            }
-            anim.duration = buttonAnimationDuration.toLong()
-            anim.start()
+    fun buttonShrink(view: View, laterAction: (() -> Unit)? = null) {
+        _isRunning = true
+        widthBeforeShrink = view.measuredWidth
+        val anim = ValueAnimator.ofInt(view.measuredWidth, view.measuredHeight)
+        anim.addUpdateListener { valueAnimator ->
+            val value = valueAnimator.animatedValue as Int
+            val layoutParams = view.layoutParams
+            layoutParams.width = value
+            view.requestLayout()
         }
-
-        if (isAnimating) animationQueue.add(shrinkAnimation)
-        else shrinkAnimation()
+        anim.doOnEnd {
+            _isRunning = false
+            laterAction?.invoke()
+        }
+        anim.duration = buttonAnimationDuration.toLong()
+        anim.start()
     }
 
     /**
@@ -117,25 +89,20 @@ class ButtonAnimator(
      *
      * @param view The view to be expanded
      */
-    fun buttonExpand(view: View) {
-        val expandAnimation: () -> Unit = {
-            isAnimating = true
-            val anim = ValueAnimator.ofInt(view.measuredWidth, widthBeforeShrink)
-            anim.addUpdateListener { valueAnimator ->
-                val value = valueAnimator.animatedValue as Int
-                val layoutParams = view.layoutParams
-                layoutParams.width = value
-                view.requestLayout()
-            }
-            anim.doOnEnd {
-                isAnimating = false
-                processAnimationQueue()
-            }
-            anim.duration = buttonAnimationDuration.toLong()
-            anim.start()
+    fun buttonExpand(view: View, laterAction: (() -> Unit)? = null) {
+        _isRunning = true
+        val anim = ValueAnimator.ofInt(view.measuredWidth, widthBeforeShrink)
+        anim.addUpdateListener { valueAnimator ->
+            val value = valueAnimator.animatedValue as Int
+            val layoutParams = view.layoutParams
+            layoutParams.width = value
+            view.requestLayout()
         }
-
-        if (isAnimating) animationQueue.add(expandAnimation)
-        else expandAnimation()
+        anim.doOnEnd {
+            _isRunning = false
+            laterAction?.invoke()
+        }
+        anim.duration = buttonAnimationDuration.toLong()
+        anim.start()
     }
 }
