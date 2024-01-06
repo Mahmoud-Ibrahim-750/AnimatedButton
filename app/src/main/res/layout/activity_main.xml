@@ -60,6 +60,7 @@
         android:elevation="30dp"
         android:outlineProvider="background"
         app:autoLoading="false"
+        app:animationDuration="1000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

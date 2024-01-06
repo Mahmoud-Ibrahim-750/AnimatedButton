@@ -1,20 +1,14 @@
 package com.mis.example.animatedbutton.ui
 
+import android.annotation.SuppressLint
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.snackbar.Snackbar
 import com.mis.animatedbutton.AnimatedButton
-import com.mis.animatedbutton.ButtonAnimation.LoadingToDone
-import com.mis.animatedbutton.ButtonAnimation.NormalToLoading
-import com.mis.animatedbutton.ButtonAnimation.DoneToNormal
-import com.mis.animatedbutton.ButtonAnimation.ErrorToNormal
-import com.mis.animatedbutton.ButtonAnimation.LoadingToError
 import com.mis.example.animatedbutton.R
-import kotlin.time.Duration
-import kotlin.time.measureTime
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,27 +25,27 @@ class MainActivity : AppCompatActivity() {
 
             // show done after 2 seconds of loading
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(LoadingToDone)
+                it.showSuccess()
             }, 2000)
 
             // return to normal state
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(DoneToNormal)
+                it.showNormal()
             }, 4000)
 
             // start loading again
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(NormalToLoading)
+                it.showLoading()
             }, 6000)
 
             // show error this time
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(LoadingToError)
+                it.showFailure()
             }, 8000)
 
             // finally, return to normal state
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(ErrorToNormal)
+                it.showNormal()
             }, 10000)
         }
 
@@ -59,22 +53,24 @@ class MainActivity : AppCompatActivity() {
         customBehaviorLoadingBtn.setOnClickListener {
             it as AnimatedButton
 
-            Snackbar.make(it, "Button Clicked", Snackbar.LENGTH_SHORT).show()
-
-            // show loading 2 seconds after click
+            // show loading after click
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(NormalToLoading)
-            }, 0)
+                it.showLoading()
+            }, 1000)
 
-            // show done after 2 seconds of loading
+            // show done after loading
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(LoadingToDone)
-            }, 100)
+                it.showFailure()
+            }, 1300)
 
-            // return to normal state after 2 seconds of done
+            // return to normal state after done
             Handler(Looper.getMainLooper()).postDelayed({
-                it.showAnimation(DoneToNormal)
-            }, 200)
+                it.showNormal()
+                @SuppressLint("SetTextI18n")
+                it.textView.text = "Try Again?"
+                it.progressBar.indeterminateTintList = ColorStateList.valueOf(Color.RED)
+                it.failureImageView.setImageResource(R.drawable.ic_launcher_foreground)
+            }, 3000)
         }
     }
 }
